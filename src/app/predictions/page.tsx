@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import CustomSelect from "@/components/CustomSelect";
+import QualifyingCountdown from "@/components/QualifyingCountdown";
 import { supabase } from "@/lib/supabase";
 
 interface Driver {
@@ -57,6 +58,7 @@ export default function PredictionsPage() {
   const [raceName, setRaceName] = useState("");
   const [raceStatus, setRaceStatus] = useState<string>("upcoming");
   const [raceId, setRaceId] = useState<string>("");
+  const [qualifyingTime, setQualifyingTime] = useState<string | null>(null);
 
   const qualiLocked = raceStatus !== "upcoming";
   const allLocked = raceStatus !== "upcoming";
@@ -89,6 +91,7 @@ export default function PredictionsPage() {
       setRaceId(data.raceId || "");
       setRaceName(data.raceName || "");
       setRaceStatus(data.raceStatus || "upcoming");
+      setQualifyingTime(data.qualifyingTime || null);
       const p = data.prediction;
       if (p) {
         if (p.race) { setRaceP1(p.race.p1 || ""); setRaceP2(p.race.p2 || ""); setRaceP3(p.race.p3 || ""); }
@@ -176,6 +179,11 @@ export default function PredictionsPage() {
           placeholder="Select race"
         />
       </div>
+
+      {/* Qualifying Countdown */}
+      {raceStatus === "upcoming" && qualifyingTime && (
+        <QualifyingCountdown qualifyingTime={qualifyingTime} />
+      )}
 
       {/* Lock Banner */}
       {allLocked && raceStatus !== "upcoming" && (

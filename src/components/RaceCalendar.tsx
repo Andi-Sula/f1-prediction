@@ -14,6 +14,7 @@ import {
   Calendar,
   Ban,
 } from "lucide-react";
+import QualifyingCountdown from "./QualifyingCountdown";
 
 interface Race {
   id: string;
@@ -186,6 +187,15 @@ export default function RaceCalendar() {
             {races.filter(r => r.status === "completed" || r.status === "cancelled").length}/{races.length} races
           </span>
         </div>
+
+        {/* Countdown for next upcoming race (only when no race is currently active) */}
+        {(() => {
+          const hasActive = races.some(r => ["qualifying", "waiting_race", "racing", "active"].includes(r.status));
+          if (hasActive) return null;
+          const nextUpcoming = races.find(r => r.status === "upcoming" && r.qualifying_time);
+          if (!nextUpcoming) return null;
+          return <div className="mt-4"><QualifyingCountdown qualifyingTime={nextUpcoming.qualifying_time!} /></div>;
+        })()}
       </div>
 
       {/* Detail Modal */}
@@ -306,6 +316,11 @@ export default function RaceCalendar() {
                   </>
                 )}
               </div>
+
+              {/* Countdown for upcoming races */}
+              {selected.status === "upcoming" && selected.qualifying_time && (
+                <QualifyingCountdown qualifyingTime={selected.qualifying_time} />
+              )}
             </div>
           </div>
         </div>

@@ -81,14 +81,20 @@ export default function RacesPage() {
       return;
     }
 
+    // Convert local datetime-local values to ISO with timezone offset
+    const toISO = (v: string) => {
+      if (!v) return null;
+      return new Date(v).toISOString();
+    };
+
     setSaving(true);
     try {
       const dateFromRaceTime = form.race_time ? form.race_time.split("T")[0] : form.date;
       const body = {
         name: form.name,
         date: dateFromRaceTime,
-        race_time: form.race_time || null,
-        qualifying_time: form.qualifying_time || null,
+        race_time: toISO(form.race_time),
+        qualifying_time: toISO(form.qualifying_time),
         status: form.status,
       };
       if (editRace) {
