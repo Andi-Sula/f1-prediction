@@ -56,12 +56,7 @@ export default function RaceCalendar() {
 
   const fmtMonth = (d: string) => new Date(d).toLocaleDateString("en-US", { month: "short" });
   const fmtDay = (d: string) => new Date(d).getDate();
-  const raceDate = (race: Race) => {
-    if (race.status === "upcoming" || race.status === "qualifying") {
-      return race.qualifying_time || race.race_time || null;
-    }
-    return race.race_time || race.qualifying_time || null;
-  };
+  const raceDate = (race: Race) => race.qualifying_time || null;
   const shortName = (name: string) => name.replace(" Grand Prix", " GP");
 
   return (

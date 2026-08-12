@@ -76,40 +76,42 @@ export default function PredictionsPage() {
   }, []);
 
   useEffect(() => {
-    if (selectedRaceId) loadPredictions(selectedRaceId);
+    if (!selectedRaceId) return;
+    let cancelled = false;
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token || cancelled) return;
+      try {
+        const res = await fetch(`/api/predictions?raceId=${selectedRaceId}`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        if (!res.ok || cancelled) return;
+        const data = await res.json();
+        if (cancelled) return;
+        setRaceId(data.raceId || "");
+        setRaceName(data.raceName || "");
+        setRaceStatus(data.raceStatus || "upcoming");
+        setQualifyingTime(data.qualifyingTime || null);
+        const p = data.prediction;
+        if (p) {
+          if (p.race) { setRaceP1(p.race.p1 || ""); setRaceP2(p.race.p2 || ""); setRaceP3(p.race.p3 || ""); }
+          else { setRaceP1(""); setRaceP2(""); setRaceP3(""); }
+          if (p.qualifying) { setQualiP1(p.qualifying.p1 || ""); setQualiP2(p.qualifying.p2 || ""); setQualiP3(p.qualifying.p3 || ""); }
+          else { setQualiP1(""); setQualiP2(""); setQualiP3(""); }
+          if (p.conditions) { setSafetyCar(p.conditions.safetyCar ?? true); setRain(p.conditions.rain ?? false); setDnfCount(p.conditions.dnfCount ?? 0); }
+          else { setSafetyCar(true); setRain(false); setDnfCount(0); }
+          if (p.poleTime) { setPoleMin(p.poleTime.minutes || ""); setPoleSec(p.poleTime.seconds || ""); setPoleMs(p.poleTime.milliseconds || ""); }
+          else { setPoleMin(""); setPoleSec(""); setPoleMs(""); }
+        } else {
+          setRaceP1(""); setRaceP2(""); setRaceP3("");
+          setQualiP1(""); setQualiP2(""); setQualiP3("");
+          setSafetyCar(true); setRain(false); setDnfCount(0);
+          setPoleMin(""); setPoleSec(""); setPoleMs("");
+        }
+      } catch { /* ignore */ }
+    })();
+    return () => { cancelled = true; };
   }, [selectedRaceId]);
-
-  const loadPredictions = async (forRaceId: string) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.access_token) return;
-    try {
-      const res = await fetch(`/api/predictions?raceId=${forRaceId}`, {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-      setRaceId(data.raceId || "");
-      setRaceName(data.raceName || "");
-      setRaceStatus(data.raceStatus || "upcoming");
-      setQualifyingTime(data.qualifyingTime || null);
-      const p = data.prediction;
-      if (p) {
-        if (p.race) { setRaceP1(p.race.p1 || ""); setRaceP2(p.race.p2 || ""); setRaceP3(p.race.p3 || ""); }
-        else { setRaceP1(""); setRaceP2(""); setRaceP3(""); }
-        if (p.qualifying) { setQualiP1(p.qualifying.p1 || ""); setQualiP2(p.qualifying.p2 || ""); setQualiP3(p.qualifying.p3 || ""); }
-        else { setQualiP1(""); setQualiP2(""); setQualiP3(""); }
-        if (p.conditions) { setSafetyCar(p.conditions.safetyCar ?? true); setRain(p.conditions.rain ?? false); setDnfCount(p.conditions.dnfCount ?? 0); }
-        else { setSafetyCar(true); setRain(false); setDnfCount(0); }
-        if (p.poleTime) { setPoleMin(p.poleTime.minutes || ""); setPoleSec(p.poleTime.seconds || ""); setPoleMs(p.poleTime.milliseconds || ""); }
-        else { setPoleMin(""); setPoleSec(""); setPoleMs(""); }
-      } else {
-        setRaceP1(""); setRaceP2(""); setRaceP3("");
-        setQualiP1(""); setQualiP2(""); setQualiP3("");
-        setSafetyCar(true); setRain(false); setDnfCount(0);
-        setPoleMin(""); setPoleSec(""); setPoleMs("");
-      }
-    } catch { /* ignore */ }
-  };
 
   const getAvailable = (excludes: string[]) => drivers.filter(d => !excludes.includes(d.code));
 
@@ -172,8 +174,7 @@ export default function PredictionsPage() {
           value={selectedRaceId}
           onChange={setSelectedRaceId}
           options={races.map(r => {
-            const dt = r.race_time || r.qualifying_time;
-            const formatted = dt ? new Date(dt).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" }) : "";
+            const formatted = r.qualifying_time ? new Date(r.qualifying_time).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
             return { value: r.id, label: `${r.name}${formatted ? ` — ${formatted}` : ""} (${r.status})` };
           })}
           placeholder="Select race"

@@ -190,8 +190,7 @@ export default function ResultsPage() {
           value={selectedRace}
           onChange={setSelectedRace}
           options={races.map(r => {
-            const dt = r.race_time || r.qualifying_time;
-            const formatted = dt ? new Date(dt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" }) : "";
+            const formatted = r.qualifying_time ? new Date(r.qualifying_time).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "";
             return { value: r.id, label: `${r.name}${formatted ? ` — ${formatted}` : ""} (${r.status})${r.results_published ? " ✓ Results set" : ""}` };
           })}
           placeholder="Select race"

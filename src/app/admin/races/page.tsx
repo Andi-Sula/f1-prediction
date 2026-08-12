@@ -28,7 +28,7 @@ export default function RacesPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editRace, setEditRace] = useState<Race | null>(null);
-  const [form, setForm] = useState({ name: "", date: "", race_time: "", qualifying_time: "", status: "upcoming" });
+  const [form, setForm] = useState({ name: "", date: "", qualifying_time: "", status: "upcoming" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [formError, setFormError] = useState("");
@@ -54,32 +54,33 @@ export default function RacesPage() {
   const openAdd = () => {
     setEditRace(null);
     setFormError("");
-    setForm({ name: "", date: "", race_time: "", qualifying_time: "", status: "upcoming" });
+    setForm({ name: "", date: "", qualifying_time: "", status: "upcoming" });
     setShowForm(true);
   };
 
   const openEdit = (race: Race) => {
     setEditRace(race);
     setFormError("");
+    // Convert UTC to local datetime-local format for the input
+    const toLocalInput = (utc: string | null) => {
+      if (!utc) return "";
+      const d = new Date(utc);
+      const offset = d.getTimezoneOffset();
+      const local = new Date(d.getTime() - offset * 60000);
+      return local.toISOString().slice(0, 16);
+    };
     setForm({
       name: race.name,
       date: race.date,
-      race_time: race.race_time ? race.race_time.slice(0, 16) : "",
-      qualifying_time: race.qualifying_time ? race.qualifying_time.slice(0, 16) : "",
+      qualifying_time: toLocalInput(race.qualifying_time),
       status: race.status,
     });
     setShowForm(true);
   };
 
   const handleSave = async () => {
-    if (!form.name || !form.race_time) return;
+    if (!form.name || !form.date) return;
     setFormError("");
-
-    // Client-side: qualifying must be before race
-    if (form.qualifying_time && form.race_time && form.qualifying_time >= form.race_time) {
-      setFormError("Qualifying date & time must be before race date & time");
-      return;
-    }
 
     // Convert local datetime-local values to ISO with timezone offset
     const toISO = (v: string) => {
@@ -89,11 +90,9 @@ export default function RacesPage() {
 
     setSaving(true);
     try {
-      const dateFromRaceTime = form.race_time ? form.race_time.split("T")[0] : form.date;
       const body = {
         name: form.name,
-        date: dateFromRaceTime,
-        race_time: toISO(form.race_time),
+        date: form.date,
         qualifying_time: toISO(form.qualifying_time),
         status: form.status,
       };
@@ -188,9 +187,9 @@ export default function RacesPage() {
             </div>
             <div>
               <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">
-                Race Date & Time
+                Race Date
               </label>
-              <input type="datetime-local" value={form.race_time} onChange={e => setForm({ ...form, race_time: e.target.value })}
+              <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })}
                 className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-sm text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
             </div>
             <div>
@@ -234,9 +233,6 @@ export default function RacesPage() {
           </thead>
           <tbody>
             {races.map((race) => {
-              const showQuali = ["upcoming", "qualifying"].includes(race.status);
-              const displayTime = showQuali ? race.qualifying_time : race.race_time;
-
               return (
               <tr key={race.id} className="border-b border-[var(--color-border)] last:border-0 hover:bg-white/[0.02] transition-colors">
                 <td className="px-5 py-3.5">
@@ -246,12 +242,12 @@ export default function RacesPage() {
                   </div>
                 </td>
                 <td className="px-5 py-3.5">
-                  {displayTime ? (
+                  {race.qualifying_time ? (
                     <div className="flex items-center gap-2 text-sm font-mono text-[var(--color-text-secondary)]">
                       <CalendarDays size={12} />
-                      {new Date(displayTime).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" })}
+                      {new Date(race.qualifying_time).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
                       <span className="text-[var(--color-text-secondary)]/50">·</span>
-                      {new Date(displayTime).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", timeZone: "UTC" })}
+                      {new Date(race.qualifying_time).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
                     </div>
                   ) : (
                     <span className="text-xs text-[var(--color-text-secondary)] italic">Not set</span>
