@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-primary: #E10600;
+  --color-primary-dark: #FF3B30;
+  --color-gold: #D4AF37;
+  --color-silver: #B0B5BA;
+  --color-bronze: #CD7F32;
+  --color-green: #4ADE5C;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Light theme (default) */
+:root {
+  --color-background: #EFEFEC;
+  --color-surface: #FFFFFF;
+  --color-text: #17181C;
+  --color-text-secondary: #6B6E76;
+  --color-border: #DDDEDA;
+}
+
+/* Dark theme */
+:root.dark {
+  --color-background: #0D0D0F;
+  --color-surface: #1A1A1E;
+  --color-text: #F0F0F0;
+  --color-text-secondary: #8E9099;
+  --color-border: #2A2A2E;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--color-background); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-secondary); }
+
+/* Safe area for mobile bottom bar */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Admin tables responsive */
+@media (max-width: 768px) {
+  table { font-size: 13px; }
+  th, td { padding: 10px 12px !important; }
+}
+
+/* Hide scrollbar */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
