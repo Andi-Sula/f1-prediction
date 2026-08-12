@@ -13,20 +13,26 @@
 
 /* Light theme (default) */
 :root {
-  --color-background: #EFEFEC;
+  --color-background: #F5F5F3;
   --color-surface: #FFFFFF;
+  --color-surface-alt: #F0F0EE;
   --color-text: #17181C;
   --color-text-secondary: #6B6E76;
   --color-border: #DDDEDA;
+  --color-hero-bg: #1A1A1E;
+  --color-hero-text: #F0F0F0;
 }
 
 /* Dark theme */
 :root.dark {
-  --color-background: #0D0D0F;
-  --color-surface: #1A1A1E;
+  --color-background: #0A0A0C;
+  --color-surface: #141416;
+  --color-surface-alt: #1A1A1E;
   --color-text: #F0F0F0;
   --color-text-secondary: #8E9099;
-  --color-border: #2A2A2E;
+  --color-border: #222226;
+  --color-hero-bg: #0A0A0C;
+  --color-hero-text: #F0F0F0;
 }
 
 body {
@@ -34,6 +40,18 @@ body {
   color: var(--color-text);
   font-family: Arial, Helvetica, sans-serif;
   transition: background-color 0.2s, color 0.2s;
+}
+
+/* Ticker animation */
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-ticker {
+  animation: ticker 30s linear infinite;
+}
+.animate-ticker:hover {
+  animation-play-state: paused;
 }
 
 /* Custom scrollbar */

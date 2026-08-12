@@ -35,24 +35,33 @@ export default function QualifyingCountdown({ qualifyingTime, compact }: Qualify
 
   if (compact) {
     return (
-      <div className="flex items-center gap-1 text-[10px] font-bold text-amber-500 mt-1">
+      <div className="flex items-center gap-1.5 text-[10px] font-extrabold text-[var(--color-primary)] mt-1">
         <Clock size={9} />
-        <span>{timeLeft.days}d {pad(timeLeft.hours)}:{pad(timeLeft.minutes)}:{pad(timeLeft.seconds)}</span>
+        <span className="font-mono">{timeLeft.days}d {pad(timeLeft.hours)}:{pad(timeLeft.minutes)}:{pad(timeLeft.seconds)}</span>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-3 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3">
-      <Clock size={16} className="text-amber-500 shrink-0" />
-      <div className="flex-1">
-        <div className="text-xs font-bold text-amber-500 mb-1">Qualifying starts in</div>
-        <div className="flex gap-2 font-mono text-sm font-extrabold text-[var(--color-text)]">
-          <span className="bg-[var(--color-background)] px-2 py-1 rounded-lg">{timeLeft.days}<span className="text-[10px] text-[var(--color-text-secondary)] ml-0.5">d</span></span>
-          <span className="bg-[var(--color-background)] px-2 py-1 rounded-lg">{pad(timeLeft.hours)}<span className="text-[10px] text-[var(--color-text-secondary)] ml-0.5">h</span></span>
-          <span className="bg-[var(--color-background)] px-2 py-1 rounded-lg">{pad(timeLeft.minutes)}<span className="text-[10px] text-[var(--color-text-secondary)] ml-0.5">m</span></span>
-          <span className="bg-[var(--color-background)] px-2 py-1 rounded-lg">{pad(timeLeft.seconds)}<span className="text-[10px] text-[var(--color-text-secondary)] ml-0.5">s</span></span>
-        </div>
+    <div className="bg-[var(--color-surface)] rounded border border-[var(--color-border)] p-5">
+      <div className="flex items-center gap-2 mb-3">
+        <Clock size={14} className="text-[var(--color-primary)]" />
+        <span className="text-[10px] font-extrabold text-[var(--color-text-secondary)] tracking-[0.15em] uppercase">QUALIFYING STARTS IN</span>
+      </div>
+      <div className="flex gap-3">
+        {[
+          { value: pad(timeLeft.days), label: "DAYS" },
+          { value: pad(timeLeft.hours), label: "HRS" },
+          { value: pad(timeLeft.minutes), label: "MIN" },
+          { value: pad(timeLeft.seconds), label: "SEC" },
+        ].map((b) => (
+          <div key={b.label} className="text-center">
+            <div className="bg-[var(--color-border)]/30 rounded-sm px-4 py-2.5 min-w-[52px]">
+              <span className="text-xl font-extrabold font-mono">{b.value}</span>
+            </div>
+            <div className="text-[9px] font-bold text-[var(--color-text-secondary)] tracking-wider mt-1">{b.label}</div>
+          </div>
+        ))}
       </div>
     </div>
   );

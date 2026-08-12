@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     if (!race) {
       return NextResponse.json({ error: "Race not found" }, { status: 404 });
     }
-    if (race.locked || race.status !== "upcoming") {
+    if (race.status !== "upcoming") {
       return NextResponse.json(
         { error: "This event has already started. You can no longer set predictions for this race." },
         { status: 403 }

@@ -64,7 +64,7 @@ export default function ProfilePage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6 min-h-[calc(100vh-4rem)] pb-24 md:pb-10">
       {/* Profile Header */}
       <div className="text-center space-y-4">
-        <div className="w-20 h-20 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center text-white font-extrabold text-2xl mx-auto shadow-xl shadow-[var(--color-primary)]/20">
+        <div className="w-20 h-20 rounded bg-[var(--color-primary)] flex items-center justify-center text-white font-extrabold text-2xl mx-auto shadow-xl shadow-[var(--color-primary)]/20">
           {initials}
         </div>
         <div>
@@ -74,19 +74,19 @@ export default function ProfilePage() {
       </div>
 
       {/* Stats */}
-      <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-5">
+      <div className="bg-[var(--color-surface)] rounded border border-[var(--color-border)] p-5">
         <div className="grid grid-cols-3 gap-4">
-          <div className="text-center bg-[var(--color-background)] rounded-xl py-4">
+          <div className="text-center bg-[var(--color-background)] rounded-sm py-4">
             <Star size={20} className="text-[var(--color-gold)] mx-auto mb-1.5" />
             <div className="text-xl font-extrabold">{profile?.points ?? "—"}</div>
             <div className="text-[10px] text-[var(--color-text-secondary)] uppercase tracking-wider font-bold mt-0.5">Points</div>
           </div>
-          <div className="text-center bg-[var(--color-background)] rounded-xl py-4">
+          <div className="text-center bg-[var(--color-background)] rounded-sm py-4">
             <Trophy size={20} className="text-[var(--color-primary)] mx-auto mb-1.5" />
             <div className="text-xl font-extrabold">{profile?.rank ? `#${profile.rank}` : "—"}</div>
             <div className="text-[10px] text-[var(--color-text-secondary)] uppercase tracking-wider font-bold mt-0.5">Rank</div>
           </div>
-          <div className="text-center bg-[var(--color-background)] rounded-xl py-4">
+          <div className="text-center bg-[var(--color-background)] rounded-sm py-4">
             <CheckCircle size={20} className="text-[var(--color-green)] mx-auto mb-1.5" />
             <div className="text-xl font-extrabold">{profile?.predictionsCount ?? "—"}</div>
             <div className="text-[10px] text-[var(--color-text-secondary)] uppercase tracking-wider font-bold mt-0.5">Predictions</div>
@@ -102,15 +102,15 @@ export default function ProfilePage() {
         </h3>
 
         {/* Raiffeisen Boost */}
-        <div className="bg-[#FFDD00] rounded-2xl p-5">
+        <div className="bg-[#FFDD00] rounded p-5">
           <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-black/10 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-sm bg-black/10 flex items-center justify-center shrink-0">
               <Zap size={20} className="text-black" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="font-bold text-sm text-black">Raiffeisen Boost</h3>
-                <span className="bg-black text-[#FFDD00] text-[10px] font-extrabold px-2 py-0.5 rounded-md">+15 PTS</span>
+                <span className="bg-black text-[#FFDD00] text-[10px] font-extrabold px-2 py-0.5 rounded-sm">+15 PTS</span>
               </div>
               <p className="text-xs text-black/70 mb-3">Enter the last 4 digits of your Raiffeisen card to earn bonus points each race.</p>
               <div className="flex items-center gap-3">
@@ -120,7 +120,7 @@ export default function ProfilePage() {
                   placeholder="• • • •"
                   value={raiffeisenCode}
                   onChange={e => { const v = e.target.value.replace(/\D/g, ""); setRaiffeisenCode(v); setRaiffeisenLinked(v.length === 4); }}
-                  className="w-24 text-center font-bold font-mono text-lg tracking-widest border-none rounded-xl bg-white/90 py-2.5 text-black placeholder:text-black/40 focus:outline-2 focus:outline-black/20 transition-colors"
+                  className="w-24 text-center font-bold font-mono text-lg tracking-widest border-none rounded-sm bg-white/90 py-2.5 text-black placeholder:text-black/40 focus:outline-2 focus:outline-black/20 transition-colors"
                 />
                 {raiffeisenLinked && (
                   <div className="flex items-center gap-1.5 text-black text-sm font-semibold">
@@ -134,15 +134,15 @@ export default function ProfilePage() {
         </div>
 
         {/* DigitAlb 2× Points */}
-        <div className="bg-[var(--color-primary)] rounded-2xl p-5 shadow-lg shadow-[var(--color-primary)]/20">
+        <div className="bg-[var(--color-primary)] rounded p-5 shadow-lg shadow-[var(--color-primary)]/20">
           <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-sm bg-white flex items-center justify-center shrink-0">
               <Tv size={20} className="text-[var(--color-primary)]" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="font-bold text-sm text-white">DigitAlb 2× Points</h3>
-                <span className="bg-white text-[var(--color-primary)] text-[10px] font-extrabold px-2 py-0.5 rounded-md">2× MULTIPLIER</span>
+                <span className="bg-white text-[var(--color-primary)] text-[10px] font-extrabold px-2 py-0.5 rounded-sm">2× MULTIPLIER</span>
               </div>
               <p className="text-xs text-white/80 mb-3">Add your subscriber ID to double your points — usable in 3 races per season.</p>
               <div className="flex items-center gap-3">
@@ -151,7 +151,7 @@ export default function ProfilePage() {
                   placeholder="DigitAlb username / card number"
                   value={digitalbId}
                   onChange={e => { setDigitalbId(e.target.value); setDigitalbLinked(e.target.value.length >= 4); }}
-                  className="flex-1 min-w-0 font-medium text-sm border-none rounded-xl bg-white/95 px-4 py-2.5 text-[var(--color-background)] placeholder:text-[var(--color-text-secondary)] focus:outline-2 focus:outline-white transition-colors"
+                  className="flex-1 min-w-0 font-medium text-sm border-none rounded-sm bg-white/95 px-4 py-2.5 text-[var(--color-background)] placeholder:text-[var(--color-text-secondary)] focus:outline-2 focus:outline-white transition-colors"
                 />
                 {digitalbLinked && (
                   <div className="flex items-center gap-1.5 text-white text-sm font-semibold shrink-0">
@@ -166,7 +166,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Settings */}
-      <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-5">
+      <div className="bg-[var(--color-surface)] rounded border border-[var(--color-border)] p-5">
         <h3 className="font-bold text-sm mb-4 flex items-center gap-2">
           <User size={16} className="text-[var(--color-text-secondary)]" />
           Settings
@@ -207,7 +207,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Actions */}
-      <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden">
+      <div className="bg-[var(--color-surface)] rounded border border-[var(--color-border)] overflow-hidden">
         <button className="w-full flex items-center gap-3 px-5 py-4 border-b border-[var(--color-border)] hover:bg-white/[0.02] transition-colors text-left group">
           <HelpCircle size={18} className="text-[var(--color-text-secondary)]" />
           <span className="flex-1 text-sm font-semibold">Help & Support</span>

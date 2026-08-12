@@ -163,7 +163,7 @@ export default function UsersPage() {
       </div>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm font-medium">
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-sm text-sm font-medium">
           {error}
           <button onClick={() => setError("")} className="ml-2 underline">dismiss</button>
         </div>
@@ -176,20 +176,20 @@ export default function UsersPage() {
           placeholder="Search users by name, username, or email..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl pl-11 pr-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors"
+          className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-sm pl-11 pr-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors"
         />
       </div>
 
       {/* Edit Modal */}
       {editUser && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setEditUser(null)}>
-          <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-6 w-full max-w-md space-y-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+          <div className="bg-[var(--color-surface)] rounded border border-[var(--color-border)] p-6 w-full max-w-md space-y-4 shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h3 className="font-extrabold text-lg flex items-center gap-2">
                 <Users size={18} className="text-[var(--color-primary)]" />
                 Edit User
               </h3>
-              <button onClick={() => setEditUser(null)} className="w-8 h-8 rounded-lg hover:bg-[var(--color-background)] flex items-center justify-center transition-colors">
+              <button onClick={() => setEditUser(null)} className="w-8 h-8 rounded-sm hover:bg-[var(--color-background)] flex items-center justify-center transition-colors">
                 <X size={16} />
               </button>
             </div>
@@ -218,10 +218,10 @@ export default function UsersPage() {
               </div>
             </div>
             <div className="flex gap-3 pt-2">
-              <button onClick={() => setEditUser(null)} className="flex-1 flex items-center justify-center gap-2 py-3 border border-[var(--color-border)] rounded-xl text-sm font-bold hover:bg-white/[0.02] transition-all">
+              <button onClick={() => setEditUser(null)} className="flex-1 flex items-center justify-center gap-2 py-3 border border-[var(--color-border)] rounded-sm text-sm font-bold hover:bg-white/[0.02] transition-all">
                 <X size={14} /> Cancel
               </button>
-              <button onClick={handleSave} disabled={saving} className="flex-1 flex items-center justify-center gap-2 py-3 bg-[var(--color-primary)] text-white rounded-xl text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50">
+              <button onClick={handleSave} disabled={saving} className="flex-1 flex items-center justify-center gap-2 py-3 bg-[var(--color-primary)] text-white rounded-sm text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50">
                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                 {saving ? "Saving..." : "Save"}
               </button>
@@ -233,19 +233,19 @@ export default function UsersPage() {
       {/* View User Details Modal */}
       {viewUser && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setViewUser(null)}>
-          <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-6 w-full max-w-lg space-y-5 shadow-2xl" onClick={e => e.stopPropagation()}>
+          <div className="bg-[var(--color-surface)] rounded border border-[var(--color-border)] p-6 w-full max-w-lg space-y-5 shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h3 className="font-extrabold text-lg flex items-center gap-2">
                 <Eye size={18} className="text-[var(--color-primary)]" />
                 User Details
               </h3>
-              <button onClick={() => setViewUser(null)} className="w-8 h-8 rounded-lg hover:bg-[var(--color-background)] flex items-center justify-center transition-colors">
+              <button onClick={() => setViewUser(null)} className="w-8 h-8 rounded-sm hover:bg-[var(--color-background)] flex items-center justify-center transition-colors">
                 <X size={16} />
               </button>
             </div>
 
-            <div className="flex items-center gap-4 bg-[var(--color-background)] rounded-xl p-4">
-              <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-white text-lg font-extrabold ${viewUser.role === "admin" ? "bg-[var(--color-gold)]" : "bg-[var(--color-primary)]"}`}>
+            <div className="flex items-center gap-4 bg-[var(--color-background)] rounded-sm p-4">
+              <div className={`w-14 h-14 rounded-sm flex items-center justify-center text-white text-lg font-extrabold ${viewUser.role === "admin" ? "bg-[var(--color-gold)]" : "bg-[var(--color-primary)]"}`}>
                 {viewUser.role === "admin" ? <Crown size={20} /> : (viewUser.name[0] + viewUser.surname[0])}
               </div>
               <div>
@@ -267,7 +267,7 @@ export default function UsersPage() {
               <DetailItem icon={<Hash size={14} />} label="Rank" value={viewUser.rank ? `#${viewUser.rank}` : "Unranked"} />
             </div>
 
-            <button onClick={() => setViewUser(null)} className="w-full flex items-center justify-center gap-2 py-3 border border-[var(--color-border)] rounded-xl text-sm font-bold hover:bg-white/[0.02] transition-all">
+            <button onClick={() => setViewUser(null)} className="w-full flex items-center justify-center gap-2 py-3 border border-[var(--color-border)] rounded-sm text-sm font-bold hover:bg-white/[0.02] transition-all">
               Close
             </button>
           </div>
@@ -275,7 +275,7 @@ export default function UsersPage() {
       )}
 
       {/* Table */}
-      <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-x-auto">
+      <div className="bg-[var(--color-surface)] rounded border border-[var(--color-border)] overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-[var(--color-border)]">
@@ -294,7 +294,7 @@ export default function UsersPage() {
               <tr key={user.id} className="border-b border-[var(--color-border)] last:border-0 hover:bg-white/[0.02] transition-colors">
                 <td className="px-5 py-3.5">
                   <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-extrabold shrink-0 ${user.role === "admin" ? "bg-[var(--color-gold)]" : "bg-[var(--color-primary)]"}`}>
+                    <div className={`w-9 h-9 rounded-sm flex items-center justify-center text-white text-xs font-extrabold shrink-0 ${user.role === "admin" ? "bg-[var(--color-gold)]" : "bg-[var(--color-primary)]"}`}>
                       {user.role === "admin" ? <Crown size={14} /> : (user.name[0] + user.surname[0])}
                     </div>
                     <div>
@@ -311,7 +311,7 @@ export default function UsersPage() {
                   <span className="text-sm font-mono text-[var(--color-text-secondary)]">@{user.username}</span>
                 </td>
                 <td className="px-5 py-3.5">
-                  <span className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-1 rounded-lg uppercase tracking-wider ${
+                  <span className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-1 rounded-sm uppercase tracking-wider ${
                     user.role === "admin"
                       ? "bg-[var(--color-gold)]/10 text-[var(--color-gold)] border border-[var(--color-gold)]/20"
                       : "bg-[var(--color-border)]/50 text-[var(--color-text-secondary)] border border-[var(--color-border)]"
@@ -331,7 +331,7 @@ export default function UsersPage() {
                   </div>
                 </td>
                 <td className="px-5 py-3.5">
-                  <span className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-1 rounded-lg uppercase tracking-wider ${
+                  <span className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-1 rounded-sm uppercase tracking-wider ${
                     user.status === "active"
                       ? "bg-[var(--color-green)]/10 text-[var(--color-green)] border border-[var(--color-green)]/20"
                       : user.status === "pending"
@@ -349,16 +349,16 @@ export default function UsersPage() {
                 </td>
                 <td className="px-5 py-3.5 text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <button onClick={() => setViewUser(user)} className="w-8 h-8 rounded-lg hover:bg-blue-500/10 flex items-center justify-center transition-colors" title="View Details">
+                    <button onClick={() => setViewUser(user)} className="w-8 h-8 rounded-sm hover:bg-blue-500/10 flex items-center justify-center transition-colors" title="View Details">
                       <Eye size={14} className="text-blue-400" />
                     </button>
-                    <button onClick={() => openEdit(user)} className="w-8 h-8 rounded-lg hover:bg-[var(--color-primary)]/10 flex items-center justify-center transition-colors" title="Edit">
+                    <button onClick={() => openEdit(user)} className="w-8 h-8 rounded-sm hover:bg-[var(--color-primary)]/10 flex items-center justify-center transition-colors" title="Edit">
                       <Pencil size={14} className="text-[var(--color-primary)]" />
                     </button>
-                    <button onClick={() => toggleRole(user)} className="w-8 h-8 rounded-lg hover:bg-[var(--color-gold)]/10 flex items-center justify-center transition-colors" title={user.role === "admin" ? "Remove Admin" : "Make Admin"}>
+                    <button onClick={() => toggleRole(user)} className="w-8 h-8 rounded-sm hover:bg-[var(--color-gold)]/10 flex items-center justify-center transition-colors" title={user.role === "admin" ? "Remove Admin" : "Make Admin"}>
                       {user.role === "admin" ? <Shield size={14} className="text-[var(--color-text-secondary)]" /> : <ShieldCheck size={14} className="text-[var(--color-gold)]" />}
                     </button>
-                    <button onClick={() => toggleStatus(user)} className="w-8 h-8 rounded-lg hover:bg-[var(--color-primary)]/10 flex items-center justify-center transition-colors" title={user.status === "active" ? "Deactivate" : "Activate"}>
+                    <button onClick={() => toggleStatus(user)} className="w-8 h-8 rounded-sm hover:bg-[var(--color-primary)]/10 flex items-center justify-center transition-colors" title={user.status === "active" ? "Deactivate" : "Activate"}>
                       {user.status === "active" ? <UserX size={14} className="text-[var(--color-text-secondary)]" /> : <UserCheck size={14} className="text-[var(--color-green)]" />}
                     </button>
                   </div>
@@ -381,7 +381,7 @@ export default function UsersPage() {
 
 function DetailItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="bg-[var(--color-background)] rounded-xl p-3">
+    <div className="bg-[var(--color-background)] rounded-sm p-3">
       <div className="flex items-center gap-1.5 text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">
         {icon} {label}
       </div>

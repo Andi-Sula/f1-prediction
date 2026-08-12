@@ -16,9 +16,11 @@ export async function GET() {
     const leaderboard = (data || []).map((u, i) => ({
       id: u.id,
       rank: i + 1,
-      name: `${u.name} ${u.surname.charAt(0)}.`,
+      username: u.username,
+      initials: ((u.name || "")[0] + (u.surname || "")[0]).toUpperCase(),
       points: u.points || 0,
-      avatar: ((u.name || "")[0] + (u.surname || "")[0]).toUpperCase(),
+      wins: (u as Record<string, unknown>).wins ?? null,
+      correct: (u as Record<string, unknown>).correct_predictions ?? null,
     }));
 
     return NextResponse.json(leaderboard);

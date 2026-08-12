@@ -119,14 +119,14 @@ export default function SignUpPage() {
   };
 
   const inputClass =
-    "w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl pl-11 pr-4 py-3.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)]/50 focus:border-[var(--color-primary)] focus:outline-none transition-colors";
+    "w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-sm pl-11 pr-4 py-3.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)]/50 focus:border-[var(--color-primary)] focus:outline-none transition-colors";
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-md space-y-6">
         {/* Header */}
         <div className="text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center mx-auto shadow-lg shadow-[var(--color-primary)]/20">
+          <div className="w-14 h-14 rounded bg-[var(--color-primary)] flex items-center justify-center mx-auto shadow-lg shadow-[var(--color-primary)]/20">
             <FlagTriangleRight size={24} className="text-white" />
           </div>
           <div>
@@ -166,7 +166,7 @@ export default function SignUpPage() {
 
         {/* Error */}
         {error && (
-          <div className="flex items-center gap-2 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 rounded-xl px-4 py-3 text-sm text-[var(--color-primary)]">
+          <div className="flex items-center gap-2 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 rounded-sm px-4 py-3 text-sm text-[var(--color-primary)]">
             <AlertCircle size={16} className="shrink-0" />
             {error}
           </div>
@@ -260,7 +260,7 @@ export default function SignUpPage() {
 
             <button
               onClick={handleNext}
-              className="w-full bg-[var(--color-primary)] text-white rounded-xl py-3.5 text-sm font-bold hover:opacity-90 transition-all"
+              className="w-full bg-[var(--color-primary)] text-white rounded-sm py-3.5 text-sm font-bold hover:opacity-90 transition-all"
             >
               Continue
             </button>
@@ -322,7 +322,7 @@ export default function SignUpPage() {
                   onChange={(e) => updateField("password", e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl pl-11 pr-12 py-3.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)]/50 focus:border-[var(--color-primary)] focus:outline-none transition-colors"
+                  className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-sm pl-11 pr-12 py-3.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)]/50 focus:border-[var(--color-primary)] focus:outline-none transition-colors"
                 />
                 <button
                   type="button"
@@ -373,14 +373,14 @@ export default function SignUpPage() {
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="flex-1 border border-[var(--color-border)] text-[var(--color-text)] rounded-xl py-3.5 text-sm font-bold hover:bg-white/[0.02] transition-all"
+                className="flex-1 border border-[var(--color-border)] text-[var(--color-text)] rounded-sm py-3.5 text-sm font-bold hover:bg-white/[0.02] transition-all"
               >
                 Back
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-[var(--color-primary)] text-white rounded-xl py-3.5 text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 bg-[var(--color-primary)] text-white rounded-sm py-3.5 text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>

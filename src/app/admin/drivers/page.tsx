@@ -150,14 +150,14 @@ export default function DriversPage() {
             {drivers.filter(d => d.active).length} active / {drivers.length} total
           </p>
         </div>
-        <button onClick={openAdd} className="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 shadow-lg shadow-[var(--color-primary)]/20 transition-all">
+        <button onClick={openAdd} className="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2.5 rounded-sm text-sm font-bold hover:opacity-90 shadow-lg shadow-[var(--color-primary)]/20 transition-all">
           <Plus size={16} />
           Add Driver
         </button>
       </div>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm font-medium">
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-sm text-sm font-medium">
           {error}
           <button onClick={() => setError("")} className="ml-2 underline">dismiss</button>
         </div>
@@ -170,43 +170,43 @@ export default function DriversPage() {
           placeholder="Search by name, team, or number..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl pl-11 pr-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors"
+          className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-sm pl-11 pr-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors"
         />
       </div>
 
       {/* Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setShowForm(false)}>
-          <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-6 w-full max-w-md space-y-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+          <div className="bg-[var(--color-surface)] rounded border border-[var(--color-border)] p-6 w-full max-w-md space-y-4 shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h3 className="font-extrabold text-lg flex items-center gap-2">
                 <Car size={18} className="text-[var(--color-primary)]" />
                 {editDriver ? "Edit Driver" : "Add Driver"}
               </h3>
-              <button onClick={() => setShowForm(false)} className="w-8 h-8 rounded-lg hover:bg-[var(--color-background)] flex items-center justify-center transition-colors">
+              <button onClick={() => setShowForm(false)} className="w-8 h-8 rounded-sm hover:bg-[var(--color-background)] flex items-center justify-center transition-colors">
                 <X size={16} />
               </button>
             </div>
             <div>
               <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Full Name</label>
               <input placeholder="e.g. Max Verstappen" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+                className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-sm px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div>
                 <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Code</label>
                 <input placeholder="e.g. VER" maxLength={3} value={form.code} onChange={e => setForm({ ...form, code: e.target.value.toUpperCase() })}
-                  className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-sm font-mono text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+                  className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-sm px-4 py-3 text-sm font-mono text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
               </div>
               <div>
                 <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Team</label>
                 <input placeholder="e.g. Red Bull Racing" value={form.team} onChange={e => setForm({ ...form, team: e.target.value })}
-                  className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+                  className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-sm px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
               </div>
               <div>
                 <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Number</label>
                 <input type="number" placeholder="e.g. 1" value={form.number} onChange={e => setForm({ ...form, number: e.target.value })}
-                  className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+                  className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-sm px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
               </div>
             </div>
 
@@ -215,11 +215,11 @@ export default function DriversPage() {
               <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Driver Photo</label>
               <div className="flex items-center gap-4">
                 {imagePreview ? (
-                  <div className="w-16 h-16 rounded-xl border border-[var(--color-border)] overflow-hidden bg-[var(--color-background)] shrink-0">
+                  <div className="w-16 h-16 rounded-sm border border-[var(--color-border)] overflow-hidden bg-[var(--color-background)] shrink-0">
                     <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                   </div>
                 ) : (
-                  <div className="w-16 h-16 rounded-xl border border-dashed border-[var(--color-border)] flex items-center justify-center bg-[var(--color-background)] shrink-0">
+                  <div className="w-16 h-16 rounded-sm border border-dashed border-[var(--color-border)] flex items-center justify-center bg-[var(--color-background)] shrink-0">
                     <ImageIcon size={20} className="text-[var(--color-text-secondary)]" />
                   </div>
                 )}
@@ -227,7 +227,7 @@ export default function DriversPage() {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center gap-2 px-4 py-2.5 border border-[var(--color-border)] rounded-xl text-sm font-semibold hover:bg-white/[0.02] transition-all"
+                    className="flex items-center gap-2 px-4 py-2.5 border border-[var(--color-border)] rounded-sm text-sm font-semibold hover:bg-white/[0.02] transition-all"
                   >
                     <Upload size={14} />
                     Upload Photo
@@ -239,14 +239,14 @@ export default function DriversPage() {
               {/* Or paste URL */}
               <input placeholder="Or paste image URL..." value={form.image_url.startsWith("data:") ? "" : form.image_url}
                 onChange={e => { setForm({ ...form, image_url: e.target.value }); setImagePreview(e.target.value || null); }}
-                className="w-full mt-2 bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-xs text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+                className="w-full mt-2 bg-[var(--color-background)] border border-[var(--color-border)] rounded-sm px-4 py-2.5 text-xs text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
             </div>
 
             <div className="flex gap-3 pt-2">
-              <button onClick={() => setShowForm(false)} className="flex-1 flex items-center justify-center gap-2 py-3 border border-[var(--color-border)] rounded-xl text-sm font-bold hover:bg-white/[0.02] transition-all">
+              <button onClick={() => setShowForm(false)} className="flex-1 flex items-center justify-center gap-2 py-3 border border-[var(--color-border)] rounded-sm text-sm font-bold hover:bg-white/[0.02] transition-all">
                 <X size={14} /> Cancel
               </button>
-              <button onClick={handleSave} disabled={saving} className="flex-1 flex items-center justify-center gap-2 py-3 bg-[var(--color-primary)] text-white rounded-xl text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50">
+              <button onClick={handleSave} disabled={saving} className="flex-1 flex items-center justify-center gap-2 py-3 bg-[var(--color-primary)] text-white rounded-sm text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50">
                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                 {saving ? "Saving..." : "Save"}
               </button>
@@ -256,7 +256,7 @@ export default function DriversPage() {
       )}
 
       {/* Table */}
-      <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-x-auto">
+      <div className="bg-[var(--color-surface)] rounded border border-[var(--color-border)] overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-[var(--color-border)]">
@@ -274,9 +274,9 @@ export default function DriversPage() {
                 <td className="px-5 py-3.5">
                   <div className="flex items-center gap-3">
                     {driver.image_url ? (
-                      <img src={driver.image_url} alt={driver.name} className="w-9 h-9 rounded-xl object-cover shrink-0" />
+                      <img src={driver.image_url} alt={driver.name} className="w-9 h-9 rounded-sm object-cover shrink-0" />
                     ) : (
-                      <div className="w-9 h-9 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center shrink-0">
+                      <div className="w-9 h-9 rounded-sm bg-[var(--color-primary)]/10 flex items-center justify-center shrink-0">
                         <Car size={16} className="text-[var(--color-primary)]" />
                       </div>
                     )}
@@ -288,7 +288,7 @@ export default function DriversPage() {
                   <span className="text-sm font-mono font-bold">{driver.number}</span>
                 </td>
                 <td className="px-5 py-3.5">
-                  <span className={`inline-block text-[10px] font-extrabold px-2.5 py-1 rounded-lg uppercase tracking-wider ${
+                  <span className={`inline-block text-[10px] font-extrabold px-2.5 py-1 rounded-sm uppercase tracking-wider ${
                     driver.active
                       ? "bg-[var(--color-green)]/10 text-[var(--color-green)] border border-[var(--color-green)]/20"
                       : "bg-[var(--color-text-secondary)]/10 text-[var(--color-text-secondary)] border border-[var(--color-text-secondary)]/20"
@@ -305,10 +305,10 @@ export default function DriversPage() {
                 </td>
                 <td className="px-5 py-3.5 text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <button onClick={() => openEdit(driver)} className="w-8 h-8 rounded-lg hover:bg-[var(--color-primary)]/10 flex items-center justify-center transition-colors" title="Edit">
+                    <button onClick={() => openEdit(driver)} className="w-8 h-8 rounded-sm hover:bg-[var(--color-primary)]/10 flex items-center justify-center transition-colors" title="Edit">
                       <Pencil size={14} className="text-[var(--color-primary)]" />
                     </button>
-                    <button onClick={() => toggleActive(driver)} className="w-8 h-8 rounded-lg hover:bg-[var(--color-primary)]/10 flex items-center justify-center transition-colors" title={driver.active ? "Deactivate" : "Activate"}>
+                    <button onClick={() => toggleActive(driver)} className="w-8 h-8 rounded-sm hover:bg-[var(--color-primary)]/10 flex items-center justify-center transition-colors" title={driver.active ? "Deactivate" : "Activate"}>
                       {driver.active ? <ToggleRight size={16} className="text-[var(--color-green)]" /> : <ToggleLeft size={16} className="text-[var(--color-text-secondary)]" />}
                     </button>
                   </div>

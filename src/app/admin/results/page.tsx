@@ -171,7 +171,7 @@ export default function ResultsPage() {
     <div className="max-w-4xl space-y-6">
       {/* Toast */}
       {message && (
-        <div className={`fixed top-20 right-6 flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold z-50 shadow-lg ${msgType === "success" ? "bg-[var(--color-green)] text-black" : "bg-[var(--color-primary)] text-white"}`}>
+        <div className={`fixed top-20 right-6 flex items-center gap-2 px-4 py-3 rounded-sm text-sm font-semibold z-50 shadow-lg ${msgType === "success" ? "bg-[var(--color-green)] text-black" : "bg-[var(--color-primary)] text-white"}`}>
           <CheckCircle2 size={16} />
           {msgText}
         </div>
@@ -184,7 +184,7 @@ export default function ResultsPage() {
       </div>
 
       {/* Race Selector */}
-      <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-5">
+      <div className="bg-[var(--color-surface)] rounded border border-[var(--color-border)] p-5">
         <label className="text-[10px] font-extrabold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-2">Select Race</label>
         <CustomSelect
           value={selectedRace}
@@ -196,7 +196,7 @@ export default function ResultsPage() {
           placeholder="Select race"
         />
         {hasResults && (
-          <div className="mt-3 flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3">
+          <div className="mt-3 flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-sm px-4 py-3">
             <CheckCircle2 size={14} className="text-amber-500 shrink-0" />
             <span className="text-sm font-semibold text-amber-500">This race already has results published. Publishing again will recalculate all scores.</span>
           </div>
@@ -244,11 +244,11 @@ export default function ResultsPage() {
               <span className="text-sm font-semibold">Number of DNFs</span>
             </div>
             <div className="flex items-center gap-2.5">
-              <button onClick={() => setDnfCount(Math.max(0, dnfCount - 1))} className="w-8 h-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-primary)] transition-colors">
+              <button onClick={() => setDnfCount(Math.max(0, dnfCount - 1))} className="w-8 h-8 rounded-sm border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-primary)] transition-colors">
                 <Minus size={14} />
               </button>
               <span className="text-base font-extrabold font-mono w-6 text-center">{dnfCount}</span>
-              <button onClick={() => setDnfCount(Math.min(22, dnfCount + 1))} className="w-8 h-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-primary)] transition-colors">
+              <button onClick={() => setDnfCount(Math.min(22, dnfCount + 1))} className="w-8 h-8 rounded-sm border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-primary)] transition-colors">
                 <Plus size={14} />
               </button>
             </div>
@@ -269,7 +269,7 @@ export default function ResultsPage() {
 
       {/* Publish */}
       <button onClick={handlePublish}
-        className="w-full flex items-center justify-center gap-2.5 py-4 bg-[var(--color-primary)] text-white rounded-xl font-bold text-sm hover:opacity-90 shadow-lg shadow-[var(--color-primary)]/20 transition-all">
+        className="w-full flex items-center justify-center gap-2.5 py-4 bg-[var(--color-primary)] text-white rounded-sm font-bold text-sm hover:opacity-90 shadow-lg shadow-[var(--color-primary)]/20 transition-all">
         <Rocket size={18} />
         PUBLISH RESULTS & CALCULATE POINTS
       </button>
@@ -277,19 +277,19 @@ export default function ResultsPage() {
       {/* Scoring Rules Reference */}
       <Section icon={<Info size={16} className="text-[var(--color-primary)]" />} title="Scoring Matrix (max 129 pts)" subtitle="Points are calculated automatically per the official regulations">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
-          <div className="bg-[var(--color-background)] rounded-xl p-3">
+          <div className="bg-[var(--color-background)] rounded-sm p-3">
             <div className="text-lg font-extrabold">24</div>
             <div className="text-[10px] text-[var(--color-text-secondary)] font-bold uppercase tracking-wider">Qualifying</div>
           </div>
-          <div className="bg-[var(--color-background)] rounded-xl p-3">
+          <div className="bg-[var(--color-background)] rounded-sm p-3">
             <div className="text-lg font-extrabold">27</div>
             <div className="text-[10px] text-[var(--color-text-secondary)] font-bold uppercase tracking-wider">Pole Time</div>
           </div>
-          <div className="bg-[var(--color-background)] rounded-xl p-3">
+          <div className="bg-[var(--color-background)] rounded-sm p-3">
             <div className="text-lg font-extrabold">58</div>
             <div className="text-[10px] text-[var(--color-text-secondary)] font-bold uppercase tracking-wider">Race Podium</div>
           </div>
-          <div className="bg-[var(--color-background)] rounded-xl p-3">
+          <div className="bg-[var(--color-background)] rounded-sm p-3">
             <div className="text-lg font-extrabold">20</div>
             <div className="text-[10px] text-[var(--color-text-secondary)] font-bold uppercase tracking-wider">Conditions</div>
           </div>
@@ -301,7 +301,7 @@ export default function ResultsPage() {
         <Section icon={<Trophy size={16} className="text-[var(--color-gold)]" />} title="Score Breakdown" subtitle={`${publishedScores.length} user(s) scored`}>
           <div className="space-y-3">
             {publishedScores.map((s) => (
-              <div key={s.userId} className="bg-[var(--color-background)] rounded-xl p-4">
+              <div key={s.userId} className="bg-[var(--color-background)] rounded-sm p-4">
                 <div className="flex items-center justify-between mb-3">
                   <span className="font-bold text-sm">@{s.username}</span>
                   <span className="text-lg font-extrabold text-[var(--color-primary)]">{s.score.finalScore} pts</span>
@@ -344,7 +344,7 @@ export default function ResultsPage() {
 
 function Section({ icon, title, subtitle, children }: { icon: React.ReactNode; title: string; subtitle: string; children: React.ReactNode }) {
   return (
-    <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-5">
+    <div className="bg-[var(--color-surface)] rounded border border-[var(--color-border)] p-5">
       <div className="flex items-center gap-2 mb-1">{icon}<h3 className="font-bold text-sm">{title}</h3></div>
       <p className="text-xs text-[var(--color-text-secondary)] mb-4 pl-[26px]">{subtitle}</p>
       {children}
@@ -376,7 +376,7 @@ function DriverSelect({ label, value, onChange, drivers, color }: {
 
 function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
   return (
-    <div className="flex rounded-xl border border-[var(--color-border)] overflow-hidden">
+    <div className="flex rounded-sm border border-[var(--color-border)] overflow-hidden">
       <button onClick={() => onChange(true)} className={`px-4 py-2 text-xs font-bold transition-all ${value ? "bg-[var(--color-primary)] text-white" : "bg-[var(--color-background)] text-[var(--color-text-secondary)]"}`}>Yes</button>
       <button onClick={() => onChange(false)} className={`px-4 py-2 text-xs font-bold transition-all ${!value ? "bg-[var(--color-primary)] text-white" : "bg-[var(--color-background)] text-[var(--color-text-secondary)]"}`}>No</button>
     </div>
@@ -386,6 +386,6 @@ function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) =>
 function TimeInput({ placeholder, value, onChange, maxLength, width = "w-14" }: { placeholder: string; value: string; onChange: (v: string) => void; maxLength: number; width?: string }) {
   return (
     <input type="text" maxLength={maxLength} placeholder={placeholder} value={value} onChange={e => onChange(e.target.value.replace(/\D/g, ""))}
-      className={`${width} text-center font-bold font-mono text-lg border border-[var(--color-border)] rounded-xl bg-[var(--color-background)] py-2.5 text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none transition-colors`} />
+      className={`${width} text-center font-bold font-mono text-lg border border-[var(--color-border)] rounded-sm bg-[var(--color-background)] py-2.5 text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none transition-colors`} />
   );
 }

@@ -1,40 +1,19 @@
 "use client";
-import { useEffect, useState } from "react";
-import {
-  Crosshair,
-  CloudRain,
-  ShieldAlert,
-  AlertTriangle,
-  Timer,
-  Zap,
-  CheckCircle2,
-  Save,
-  Minus,
-  Plus,
-  Clock,
-  Tv,
-  ArrowRight,
-  Info,
-  Lock,
-} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Lock, Save, CheckCircle2, Minus, Plus, Zap, Tv, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import CustomSelect from "@/components/CustomSelect";
 import QualifyingCountdown from "@/components/QualifyingCountdown";
 import { supabase } from "@/lib/supabase";
 
-interface Driver {
-  code: string;
-  name: string;
-  team: string;
-}
+interface Driver { code: string; name: string; team: string; }
+interface Race { id: string; name: string; round: number; qualifying_time: string | null; status: string; }
 
-interface Race {
-  id: string;
-  name: string;
-  race_time: string | null;
-  qualifying_time: string | null;
-  status: string;
-}
+const SECTIONS = [
+  { id: "podium", label: "RACE PODIUM", icon: "🏆", pts: 58 },
+  { id: "conditions", label: "RACE CONDITIONS", icon: "🌧️", pts: 20 },
+  { id: "qualifying", label: "QUALIFYING POLE", icon: "⚡", pts: 51 },
+] as const;
 
 export default function PredictionsPage() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
@@ -52,22 +31,19 @@ export default function PredictionsPage() {
   const [poleMin, setPoleMin] = useState("");
   const [poleSec, setPoleSec] = useState("");
   const [poleMs, setPoleMs] = useState("");
-  const [raiffeisenCode, setRaiffeisenCode] = useState("");
-  const [boostApplied, setBoostApplied] = useState(false);
   const [message, setMessage] = useState("");
-  const [raceName, setRaceName] = useState("");
-  const [raceStatus, setRaceStatus] = useState<string>("upcoming");
-  const [raceId, setRaceId] = useState<string>("");
+  const [raceStatus, setRaceStatus] = useState("upcoming");
+  const [raceId, setRaceId] = useState("");
   const [qualifyingTime, setQualifyingTime] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState("podium");
 
-  const qualiLocked = raceStatus !== "upcoming";
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   const allLocked = raceStatus !== "upcoming";
 
   useEffect(() => {
     fetch("/api/drivers").then(r => r.json()).then(setDrivers).catch(() => {});
     fetch("/api/races").then(r => r.json()).then((data: Race[]) => {
       setRaces(data);
-      // Auto-select the active race or first upcoming
       const active = data.find(r => ["qualifying", "waiting_race", "racing"].includes(r.status));
       const upcoming = data.find(r => r.status === "upcoming");
       const defaultRace = active || upcoming || data[0];
@@ -89,7 +65,6 @@ export default function PredictionsPage() {
         const data = await res.json();
         if (cancelled) return;
         setRaceId(data.raceId || "");
-        setRaceName(data.raceName || "");
         setRaceStatus(data.raceStatus || "upcoming");
         setQualifyingTime(data.qualifyingTime || null);
         const p = data.prediction;
@@ -113,14 +88,28 @@ export default function PredictionsPage() {
     return () => { cancelled = true; };
   }, [selectedRaceId]);
 
-  const getAvailable = (excludes: string[]) => drivers.filter(d => !excludes.includes(d.code));
+  // Scroll-based section tracking
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) setActiveSection(entry.target.id);
+        }
+      },
+      { threshold: 0.2, rootMargin: "-100px 0px -50% 0px" },
+    );
+    SECTIONS.forEach(s => {
+      const el = sectionRefs.current[s.id];
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, [races, selectedRaceId]);
 
-  const buildData = () => ({
-    race: { p1: raceP1, p2: raceP2, p3: raceP3 },
-    qualifying: { p1: qualiP1, p2: qualiP2, p3: qualiP3 },
-    conditions: { safetyCar, rain, dnfCount },
-    poleTime: { minutes: poleMin, seconds: poleSec, milliseconds: poleMs },
-  });
+  const scrollToSection = (id: string) => {
+    sectionRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const getAvailable = (excludes: string[]) => drivers.filter(d => !excludes.includes(d.code));
 
   const handleSave = async () => {
     if (allLocked) { setMessage("Predictions are locked"); setTimeout(() => setMessage(""), 3000); return; }
@@ -131,7 +120,13 @@ export default function PredictionsPage() {
         "Content-Type": "application/json",
         ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
       },
-      body: JSON.stringify({ ...buildData(), raceId }),
+      body: JSON.stringify({
+        race: { p1: raceP1, p2: raceP2, p3: raceP3 },
+        qualifying: { p1: qualiP1, p2: qualiP2, p3: qualiP3 },
+        conditions: { safetyCar, rain, dnfCount },
+        poleTime: { minutes: poleMin, seconds: poleSec, milliseconds: poleMs },
+        raceId,
+      }),
     });
     if (res.ok) {
       setMessage("Predictions saved!");
@@ -142,300 +137,272 @@ export default function PredictionsPage() {
     setTimeout(() => setMessage(""), 3000);
   };
 
-
+  const selectedRace = races.find(r => r.id === selectedRaceId);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6 sm:space-y-8 min-h-[calc(100vh-4rem)] pb-24 md:pb-10">
+    <div className="min-h-[calc(100vh-4rem)] pb-24 md:pb-10">
       {/* Toast */}
       {message && (
-        <div className={`fixed top-20 right-6 flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold z-50 shadow-lg ${message.includes("submitted") || message.includes("saved") ? "bg-[var(--color-green)] text-black" : "bg-[var(--color-primary)] text-white"}`}>
+        <div className={`fixed top-20 right-6 flex items-center gap-2 px-4 py-3 rounded text-sm font-semibold z-50 shadow-lg ${
+          message.includes("saved") ? "bg-[var(--color-green)] text-black" : "bg-[var(--color-primary)] text-white"
+        }`}>
           <CheckCircle2 size={16} />
           {message}
         </div>
       )}
 
-      {/* Page Header */}
-      <div>
-        <div className="flex items-center gap-3 mb-1">
-          <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center">
-            <Crosshair size={20} className="text-[var(--color-primary)]" />
+      {/* ── Header ── */}
+      <div className="border-b border-[var(--color-border)]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-6">
+          <div className="text-[11px] font-extrabold tracking-[0.15em] text-[var(--color-primary)] mb-2">
+            🏎️&ensp;{selectedRace ? `ROUND ${selectedRace.round} — ${selectedRace.name.replace(" Grand Prix", " GP").toUpperCase()}` : "SELECT A RACE"}
           </div>
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight">Race Predictions</h1>
-            <p className="text-sm text-[var(--color-text-secondary)]">{raceName || "Loading..."}</p>
+
+          <div className="flex items-start justify-between mb-6">
+            <h1 className="text-4xl sm:text-5xl font-black text-[var(--color-text)] tracking-tight">MAKE YOUR PICKS</h1>
+            <div className="text-right hidden sm:block">
+              <div className="text-[10px] font-extrabold text-[var(--color-text-secondary)] tracking-wider">POTENTIAL SCORE</div>
+              <div className="flex items-baseline gap-1 justify-end">
+                <span className="text-3xl font-black text-[var(--color-primary)]">0</span>
+                <span className="text-lg font-bold text-[var(--color-text-secondary)]">/ 129</span>
+              </div>
+              <div className="h-[2px] bg-[var(--color-primary)] rounded-full mt-1" />
+            </div>
           </div>
+
+          <CustomSelect
+            value={selectedRaceId}
+            onChange={setSelectedRaceId}
+            options={races.map(r => ({
+              value: r.id,
+              label: `${r.name}${r.qualifying_time ? ` — ${new Date(r.qualifying_time).toLocaleDateString("en-US", { month: "short", day: "numeric" })}` : ""} (${r.status})`,
+            }))}
+            placeholder="Select race"
+          />
+
+          {raceStatus === "upcoming" && qualifyingTime && (
+            <div className="mt-4"><QualifyingCountdown qualifyingTime={qualifyingTime} /></div>
+          )}
+
+          {allLocked && raceStatus !== "upcoming" && (
+            <div className="flex items-center gap-3 mt-4 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 rounded px-4 py-3">
+              <Lock size={16} className="text-[var(--color-primary)]" />
+              <span className="text-sm font-semibold text-[var(--color-primary)]">Predictions are locked — this race is no longer in upcoming status</span>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Race Selector */}
-      <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-4">
-        <label className="text-[10px] font-extrabold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-2">Select Race</label>
-        <CustomSelect
-          value={selectedRaceId}
-          onChange={setSelectedRaceId}
-          options={races.map(r => {
-            const formatted = r.qualifying_time ? new Date(r.qualifying_time).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
-            return { value: r.id, label: `${r.name}${formatted ? ` — ${formatted}` : ""} (${r.status})` };
-          })}
-          placeholder="Select race"
-        />
+      {/* ── Main 2-col layout ── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-12">
+        <div className="flex">
+          {/* Sidebar — desktop */}
+          <aside className="hidden md:block w-64 shrink-0 pt-8 pr-6 border-r border-[var(--color-border)]">
+            <div className="sticky top-20">
+              <div className="text-[10px] font-extrabold text-[var(--color-text-secondary)] tracking-[0.15em] mb-3">SELECT GAME</div>
+              <nav className="space-y-1">
+                {SECTIONS.map(s => {
+                  const active = activeSection === s.id;
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => scrollToSection(s.id)}
+                      className={`w-full text-left px-4 py-3.5 rounded flex items-center gap-3 transition-all relative ${
+                        active ? "bg-[var(--color-surface)]" : "hover:bg-[var(--color-surface)]/50"
+                      }`}
+                    >
+                      {active && <div className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-[var(--color-primary)]" />}
+                      <span className="text-lg">{s.icon}</span>
+                      <div>
+                        <div className={`text-[13px] font-extrabold tracking-wide ${active ? "text-[var(--color-text)]" : "text-[var(--color-text-secondary)]"}`}>
+                          {s.label}
+                        </div>
+                        <div className={`text-[10px] font-bold ${active ? "text-[var(--color-primary)]" : "text-[var(--color-primary)]/50"}`}>
+                          UP TO {s.pts} PTS
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+          </aside>
+
+          {/* Content column */}
+          <div className="flex-1 md:pl-8">
+            {/* Mobile tabs — sticky */}
+            <div className="md:hidden sticky top-14 z-30 bg-[var(--color-background)] border-b border-[var(--color-border)] -mx-4 px-4 flex gap-1 overflow-x-auto py-2" style={{ scrollbarWidth: "none" }}>
+              {SECTIONS.map(s => {
+                const active = activeSection === s.id;
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => scrollToSection(s.id)}
+                    className={`shrink-0 px-4 py-2.5 rounded text-[11px] font-extrabold flex items-center gap-2 transition-all border ${
+                      active
+                        ? "bg-[var(--color-surface)] border-[var(--color-primary)]/30 text-[var(--color-text)]"
+                        : "border-transparent text-[var(--color-text-secondary)]"
+                    }`}
+                  >
+                    <span>{s.icon}</span>{s.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="pt-4 md:pt-8">
+            <div className={`space-y-16 ${allLocked ? "opacity-50 pointer-events-none" : ""}`}>
+              {/* ─ Race Podium ─ */}
+              <section id="podium" ref={el => { sectionRefs.current.podium = el; }}>
+                <SectionHeader icon="🏆" title="RACE PODIUM" desc="Predict the top 3 race finishers on Sunday" pts={58} />
+                <div className="mt-6 space-y-4">
+                  <DriverPicker label="P1 — Winner" badge="1" value={raceP1} onChange={setRaceP1} drivers={getAvailable([raceP2, raceP3])} color="#FFD700" />
+                  <DriverPicker label="P2 — Second" badge="2" value={raceP2} onChange={setRaceP2} drivers={getAvailable([raceP1, raceP3])} color="#C0C0C0" />
+                  <DriverPicker label="P3 — Third" badge="3" value={raceP3} onChange={setRaceP3} drivers={getAvailable([raceP1, raceP2])} color="#CD7F32" />
+                </div>
+                <ScoringBox rules={[
+                  "P1 correct position: 25 pts — in top 3: 10 pts",
+                  "P2 correct position: 18 pts — in top 3: 8 pts",
+                  "P3 correct position: 15 pts — in top 3: 6 pts",
+                ]} />
+              </section>
+
+              {/* ─ Race Conditions ─ */}
+              <section id="conditions" ref={el => { sectionRefs.current.conditions = el; }}>
+                <SectionHeader icon="🌧️" title="RACE CONDITIONS" desc="Predict safety car, rain and DNFs" pts={20} />
+                <div className="mt-6 bg-[var(--color-surface)] border border-[var(--color-border)] rounded divide-y divide-[var(--color-border)] overflow-hidden">
+                  <ConditionRow label="Safety Car"><YesNo value={safetyCar} onChange={setSafetyCar} /></ConditionRow>
+                  <ConditionRow label="Rain"><YesNo value={rain} onChange={setRain} /></ConditionRow>
+                  <ConditionRow label="Number of DNFs"><Stepper value={dnfCount} onChange={setDnfCount} min={0} max={22} /></ConditionRow>
+                </div>
+                <ScoringBox rules={[
+                  "Correct Safety Car prediction: 5 pts",
+                  "Correct Rain prediction: 5 pts",
+                  "Exact DNF count: 10 pts — ±1 off: 5 pts — ±2 off: 2 pts",
+                ]} />
+              </section>
+
+              {/* ─ Qualifying Pole Position ─ */}
+              <section id="qualifying" ref={el => { sectionRefs.current.qualifying = el; }}>
+                <SectionHeader icon="⚡" title="QUALIFYING POLE POSITION" desc="Predict qualifying top 3 and the fastest lap time" pts={51} />
+                <div className="mt-6 space-y-4">
+                  <DriverPicker label="P1 — Pole" badge="1" value={qualiP1} onChange={setQualiP1} drivers={getAvailable([qualiP2, qualiP3])} color="#FFD700" />
+                  <DriverPicker label="P2 — Second" badge="2" value={qualiP2} onChange={setQualiP2} drivers={getAvailable([qualiP1, qualiP3])} color="#C0C0C0" />
+                  <DriverPicker label="P3 — Third" badge="3" value={qualiP3} onChange={setQualiP3} drivers={getAvailable([qualiP1, qualiP2])} color="#CD7F32" />
+                </div>
+                <div className="mt-8">
+                  <div className="text-[10px] font-extrabold text-[var(--color-text-secondary)] tracking-[0.12em] mb-3">BEST LAP TIME PREDICTION</div>
+                  <div className="flex items-center gap-2">
+                    <TimeInput placeholder="MM" value={poleMin} onChange={setPoleMin} maxLength={2} />
+                    <span className="text-lg font-bold text-[var(--color-text-secondary)]">:</span>
+                    <TimeInput placeholder="SS" value={poleSec} onChange={setPoleSec} maxLength={2} />
+                    <span className="text-lg font-bold text-[var(--color-text-secondary)]">.</span>
+                    <TimeInput placeholder="mmm" value={poleMs} onChange={setPoleMs} maxLength={3} width="w-16" />
+                  </div>
+                  <div className="text-xs text-[var(--color-text-secondary)] mt-2">Format: 01:25.000</div>
+                </div>
+                <ScoringBox rules={[
+                  "P1 correct position: 10 pts — in top 3: 5 pts",
+                  "P2 correct position: 8 pts — in top 3: 4 pts",
+                  "P3 correct position: 6 pts — in top 3: 3 pts",
+                  "Pole time MM:SS match: 2 pts — +tenths: +5 — +hundredths: +5 — +thousandths: +15",
+                ]} />
+              </section>
+            </div>
+
+            {/* Boost Promotions */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-12">
+              <Link href="/profile" className="group bg-[#FFDD00] rounded p-5 hover:shadow-lg hover:shadow-[#FFDD00]/20 transition-all">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-sm bg-black/10 flex items-center justify-center shrink-0">
+                    <Zap size={20} className="text-black" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-bold text-sm text-black">Raiffeisen Boost</h3>
+                      <span className="bg-black text-[#FFDD00] text-[10px] font-extrabold px-2 py-0.5 rounded-sm">+15 PTS</span>
+                    </div>
+                    <p className="text-xs text-black/70">Link your Raiffeisen card in your profile to earn bonus points.</p>
+                    <div className="flex items-center gap-1 mt-2 text-xs font-bold text-black/80 group-hover:text-black transition-colors">
+                      Go to Profile <ArrowRight size={12} />
+                    </div>
+                  </div>
+                </div>
+              </Link>
+              <Link href="/profile" className="group bg-[var(--color-primary)] rounded p-5 hover:shadow-lg hover:shadow-[var(--color-primary)]/30 transition-all">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-sm bg-white flex items-center justify-center shrink-0">
+                    <Tv size={20} className="text-[var(--color-primary)]" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-bold text-sm text-white">DigitAlb 2× Points</h3>
+                      <span className="bg-white text-[var(--color-primary)] text-[10px] font-extrabold px-2 py-0.5 rounded-sm">2×</span>
+                    </div>
+                    <p className="text-xs text-white/80">Add your subscriber ID in your profile to double your points.</p>
+                    <div className="flex items-center gap-1 mt-2 text-xs font-bold text-white/80 group-hover:text-white transition-colors">
+                      Go to Profile <ArrowRight size={12} />
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </div>
+
+            {/* Save */}
+            <div className="mt-12">
+              <button
+                onClick={handleSave}
+                disabled={allLocked}
+                className={`w-full flex items-center justify-center gap-2.5 py-4 rounded font-extrabold text-sm tracking-wider transition-all ${
+                  allLocked
+                    ? "bg-[var(--color-border)] text-[var(--color-text-secondary)] cursor-not-allowed"
+                    : "bg-[var(--color-primary)] text-white hover:opacity-90 shadow-lg shadow-[var(--color-primary)]/20"
+                }`}
+              >
+                {allLocked ? <Lock size={16} /> : <Save size={16} />}
+                {allLocked ? "PREDICTIONS LOCKED" : "SAVE PREDICTIONS"}
+              </button>
+            </div>
+          </div>
+          </div>
+        </div>
       </div>
-
-      {/* Qualifying Countdown */}
-      {raceStatus === "upcoming" && qualifyingTime && (
-        <QualifyingCountdown qualifyingTime={qualifyingTime} />
-      )}
-
-      {/* Lock Banner */}
-      {allLocked && raceStatus !== "upcoming" && (
-        <div className="flex items-center gap-3 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 rounded-xl px-4 py-3">
-          <Lock size={16} className="text-[var(--color-primary)]" />
-          <span className="text-sm font-semibold text-[var(--color-primary)]">Predictions are locked — this race is no longer in upcoming status</span>
-        </div>
-      )}
-
-      {/* Race Predictions */}
-      <div className={allLocked ? "opacity-50 pointer-events-none" : ""}>
-      <Card
-        icon={<Crosshair size={16} className="text-[var(--color-primary)]" />}
-        title="Podium Finish — Sunday"
-        subtitle="Predict the top 3 race finishers"
-      >
-        <div className="space-y-3">
-          <DriverPicker label="P1" badge="1" value={raceP1} onChange={setRaceP1} drivers={getAvailable([raceP2, raceP3])} color="var(--color-gold)" />
-          <DriverPicker label="P2" badge="2" value={raceP2} onChange={setRaceP2} drivers={getAvailable([raceP1, raceP3])} color="var(--color-silver)" />
-          <DriverPicker label="P3" badge="3" value={raceP3} onChange={setRaceP3} drivers={getAvailable([raceP1, raceP2])} color="var(--color-bronze)" />
-        </div>
-      </Card>
-
-      {/* Race Conditions */}
-      <Card
-        icon={<CloudRain size={16} className="text-[var(--color-primary)]" />}
-        title="Race Conditions"
-        subtitle="Predict the race day conditions"
-      >
-        <div className="space-y-0 divide-y divide-[var(--color-border)]">
-          <div className="flex items-center justify-between py-4">
-            <div className="flex items-center gap-3">
-              <ShieldAlert size={18} className="text-[var(--color-text-secondary)]" />
-              <span className="text-sm font-semibold">Safety Car</span>
-            </div>
-            <Toggle value={safetyCar} onChange={setSafetyCar} />
-          </div>
-          <div className="flex items-center justify-between py-4">
-            <div className="flex items-center gap-3">
-              <CloudRain size={18} className="text-[var(--color-text-secondary)]" />
-              <span className="text-sm font-semibold">Rain</span>
-            </div>
-            <Toggle value={rain} onChange={setRain} />
-          </div>
-          <div className="flex items-center justify-between py-4">
-            <div className="flex items-center gap-3">
-              <AlertTriangle size={18} className="text-[var(--color-text-secondary)]" />
-              <span className="text-sm font-semibold">Number of DNFs</span>
-            </div>
-            <Stepper value={dnfCount} onChange={setDnfCount} min={0} max={22} />
-          </div>
-        </div>
-      </Card>
-      </div>
-
-      {/* Qualifying Predictions */}
-      <Ticks />
-      <div className={qualiLocked ? "opacity-50 pointer-events-none" : ""}>
-      <Card
-        icon={<Timer size={16} className={qualiLocked ? "text-[var(--color-text-secondary)]" : "text-[var(--color-primary)]"} />}
-        title={qualiLocked ? "Qualifying Top 3 — Locked" : "Qualifying Top 3 — Saturday"}
-        subtitle={qualiLocked ? "Qualifying predictions have been locked" : "Predict the qualifying order"}
-      >
-        <div className="space-y-3">
-          <DriverPicker label="P1" badge="1" value={qualiP1} onChange={setQualiP1} drivers={getAvailable([qualiP2, qualiP3])} color="var(--color-gold)" />
-          <DriverPicker label="P2" badge="2" value={qualiP2} onChange={setQualiP2} drivers={getAvailable([qualiP1, qualiP3])} color="var(--color-silver)" />
-          <DriverPicker label="P3" badge="3" value={qualiP3} onChange={setQualiP3} drivers={getAvailable([qualiP1, qualiP2])} color="var(--color-bronze)" />
-        </div>
-      </Card>
-
-      {/* Pole Time */}
-      <Card
-        icon={<Clock size={16} className={qualiLocked ? "text-[var(--color-text-secondary)]" : "text-[var(--color-primary)]"} />}
-        title={qualiLocked ? "Pole Position Time — Locked" : "Pole Position Time"}
-        subtitle={qualiLocked ? "Pole time prediction has been locked" : "Predict the fastest qualifying lap"}
-      >
-        <div className="flex items-center gap-2">
-          <TimeInput placeholder="MM" value={poleMin} onChange={setPoleMin} maxLength={2} />
-          <span className="text-lg font-bold text-[var(--color-text-secondary)]">:</span>
-          <TimeInput placeholder="SS" value={poleSec} onChange={setPoleSec} maxLength={2} />
-          <span className="text-lg font-bold text-[var(--color-text-secondary)]">:</span>
-          <TimeInput placeholder="mmm" value={poleMs} onChange={setPoleMs} maxLength={3} width="w-16" />
-        </div>
-        <div className="flex items-center justify-between mt-3 px-1">
-          <span className="text-xs text-[var(--color-text-secondary)]">Format: 01:25:000</span>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-[var(--color-text-secondary)]">Last Quali</span>
-            <span className="font-bold font-mono text-[var(--color-text)]">01:22:225</span>
-          </div>
-        </div>
-      </Card>
-      </div>
-
-      {/* Boost Promotions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Raiffeisen Boost Promo */}
-        <Link href="/profile" className="group bg-[#FFDD00] rounded-2xl p-5 hover:shadow-lg hover:shadow-[#FFDD00]/20 transition-all">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-black/10 flex items-center justify-center shrink-0">
-              <Zap size={20} className="text-black" />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-bold text-sm text-black">Raiffeisen Boost</h3>
-                <span className="bg-black text-[#FFDD00] text-[10px] font-extrabold px-2 py-0.5 rounded-md">+15 PTS</span>
-              </div>
-              <p className="text-xs text-black/70">Link your Raiffeisen card in your profile to earn bonus points.</p>
-              <div className="flex items-center gap-1 mt-2 text-xs font-bold text-black/80 group-hover:text-black transition-colors">
-                Go to Profile <ArrowRight size={12} />
-              </div>
-            </div>
-          </div>
-        </Link>
-
-        {/* DigitAlb 2× Promo */}
-        <Link href="/profile" className="group bg-[var(--color-primary)] rounded-2xl p-5 hover:shadow-lg hover:shadow-[var(--color-primary)]/30 transition-all">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0">
-              <Tv size={20} className="text-[var(--color-primary)]" />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-bold text-sm text-white">DigitAlb 2× Points</h3>
-                <span className="bg-white text-[var(--color-primary)] text-[10px] font-extrabold px-2 py-0.5 rounded-md">2×</span>
-              </div>
-              <p className="text-xs text-white/80">Add your subscriber ID in your profile to double your points.</p>
-              <div className="flex items-center gap-1 mt-2 text-xs font-bold text-white/80 group-hover:text-white transition-colors">
-                Go to Profile <ArrowRight size={12} />
-              </div>
-            </div>
-          </div>
-        </Link>
-      </div>
-
-      {/* Save */}
-      <div className="pt-2">
-        <button
-          onClick={handleSave}
-          disabled={allLocked}
-          className={`w-full flex items-center justify-center gap-2.5 py-4 rounded-xl font-bold text-sm transition-all ${allLocked ? "bg-[var(--color-border)] text-[var(--color-text-secondary)] cursor-not-allowed" : "bg-[var(--color-primary)] text-white hover:opacity-90 shadow-lg shadow-[var(--color-primary)]/20"}`}
-        >
-          {allLocked ? <Lock size={16} /> : <Save size={16} />}
-          {allLocked ? "PREDICTIONS LOCKED" : "SAVE PREDICTIONS"}
-        </button>
-        {!allLocked && <p className="text-xs text-[var(--color-text-secondary)] text-center mt-2">Your predictions are auto-submitted and can be changed anytime before the deadline.</p>}
-      </div>
-
-      {/* Scoring Reference */}
-      <Card
-        icon={<Info size={16} className="text-[var(--color-primary)]" />}
-        title="Scoring Rules"
-        subtitle="Max 129 base points per race weekend"
-      >
-        <div className="space-y-4">
-          {/* Qualifying */}
-          <div>
-            <div className="text-[10px] font-extrabold text-[var(--color-text-secondary)] uppercase tracking-wider mb-2">Qualifying Top 3 — 24 pts max</div>
-            <div className="grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">P1</div>
-                <div className="text-[var(--color-text-secondary)]">10 exact / 5 partial</div>
-              </div>
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">P2</div>
-                <div className="text-[var(--color-text-secondary)]">8 exact / 4 partial</div>
-              </div>
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">P3</div>
-                <div className="text-[var(--color-text-secondary)]">6 exact / 3 partial</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Pole Time */}
-          <div>
-            <div className="text-[10px] font-extrabold text-[var(--color-text-secondary)] uppercase tracking-wider mb-2">Pole Time — 27 pts max</div>
-            <div className="grid grid-cols-4 gap-2 text-center text-xs">
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">MM:SS</div>
-                <div className="text-[var(--color-text-secondary)]">2 pts</div>
-              </div>
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">.X</div>
-                <div className="text-[var(--color-text-secondary)]">+5 (7)</div>
-              </div>
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">.XX</div>
-                <div className="text-[var(--color-text-secondary)]">+5 (12)</div>
-              </div>
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">.XXX</div>
-                <div className="text-[var(--color-text-secondary)]">+15 (27)</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Race */}
-          <div>
-            <div className="text-[10px] font-extrabold text-[var(--color-text-secondary)] uppercase tracking-wider mb-2">Race Podium — 58 pts max</div>
-            <div className="grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">P1</div>
-                <div className="text-[var(--color-text-secondary)]">25 exact / 10 partial</div>
-              </div>
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">P2</div>
-                <div className="text-[var(--color-text-secondary)]">18 exact / 8 partial</div>
-              </div>
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">P3</div>
-                <div className="text-[var(--color-text-secondary)]">15 exact / 6 partial</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Conditions */}
-          <div>
-            <div className="text-[10px] font-extrabold text-[var(--color-text-secondary)] uppercase tracking-wider mb-2">Conditions — 20 pts max</div>
-            <div className="grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">Rain</div>
-                <div className="text-[var(--color-text-secondary)]">5 pts</div>
-              </div>
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">Safety Car</div>
-                <div className="text-[var(--color-text-secondary)]">5 pts</div>
-              </div>
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">DNFs</div>
-                <div className="text-[var(--color-text-secondary)]">10 pts (exact)</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Card>
     </div>
   );
 }
 
-/* ── Reusable components ── */
+/* ── Sub-components ── */
 
-function Card({ icon, title, subtitle, children }: { icon: React.ReactNode; title: string; subtitle?: string; children: React.ReactNode }) {
+function SectionHeader({ icon, title, desc, pts }: { icon: string; title: string; desc: string; pts: number }) {
   return (
-    <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-5">
-      <div className="flex items-center gap-2 mb-1">
-        {icon}
-        <h3 className="font-bold text-sm">{title}</h3>
+    <div className="flex items-start justify-between gap-4">
+      <div className="flex items-center gap-3 min-w-0">
+        <span className="text-2xl shrink-0">{icon}</span>
+        <div className="min-w-0">
+          <h2 className="text-2xl sm:text-3xl font-black text-[var(--color-text)] tracking-tight">{title}</h2>
+          <p className="text-sm text-[var(--color-text-secondary)] mt-1">{desc}</p>
+        </div>
       </div>
-      {subtitle && <p className="text-xs text-[var(--color-text-secondary)] mb-4 pl-[26px]">{subtitle}</p>}
-      {!subtitle && <div className="mb-4" />}
-      {children}
+      <div className="text-right shrink-0">
+        <div className="text-3xl font-black text-[var(--color-primary)]">{pts}</div>
+        <div className="text-[10px] font-extrabold text-[var(--color-text-secondary)] tracking-wider">MAX PTS</div>
+      </div>
+    </div>
+  );
+}
+
+function ScoringBox({ rules }: { rules: string[] }) {
+  return (
+    <div className="mt-6 bg-[var(--color-surface)] border border-[var(--color-border)] rounded p-4">
+      <div className="text-[10px] font-extrabold text-[var(--color-text-secondary)] tracking-[0.12em] mb-3">SCORING RULES</div>
+      <div className="space-y-2 text-sm text-[var(--color-text-secondary)]">
+        {rules.map((r, i) => (
+          <div key={i} className="flex items-start gap-2">
+            <span className="text-[var(--color-primary)] shrink-0">→</span>
+            <span>{r}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -443,28 +410,46 @@ function Card({ icon, title, subtitle, children }: { icon: React.ReactNode; titl
 function DriverPicker({ label, badge, value, onChange, drivers, color }: {
   label: string; badge: string; value: string; onChange: (v: string) => void; drivers: Driver[]; color: string;
 }) {
-  const options = drivers.map(d => ({ value: d.code, label: `${d.name} (${d.code}) — ${d.team}` }));
   return (
     <div className="flex items-center gap-3">
-      <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-extrabold text-xs shadow-sm" style={{ backgroundColor: color }}>
+      <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-extrabold text-xs shadow-sm shrink-0" style={{ backgroundColor: color }}>
         {badge}
       </div>
       <CustomSelect
         value={value}
         onChange={onChange}
-        options={options}
-        placeholder={`Select ${label} driver`}
+        options={drivers.map(d => ({ value: d.code, label: `${d.name} (${d.code}) — ${d.team}` }))}
+        placeholder={`Select ${label}`}
         className="flex-1"
       />
     </div>
   );
 }
 
-function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
+function ConditionRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex rounded-xl border border-[var(--color-border)] overflow-hidden">
-      <button onClick={() => onChange(true)} className={`px-4 py-2 text-xs font-bold transition-all ${value ? "bg-[var(--color-primary)] text-white" : "bg-[var(--color-background)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"}`}>Yes</button>
-      <button onClick={() => onChange(false)} className={`px-4 py-2 text-xs font-bold transition-all ${!value ? "bg-[var(--color-primary)] text-white" : "bg-[var(--color-background)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"}`}>No</button>
+    <div className="flex items-center justify-between px-5 py-4">
+      <span className="text-sm font-bold">{label}</span>
+      {children}
+    </div>
+  );
+}
+
+function YesNo({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div className="flex rounded overflow-hidden border border-[var(--color-border)]">
+      <button
+        onClick={() => onChange(true)}
+        className={`px-5 py-2 text-xs font-extrabold tracking-wider transition-all ${
+          value ? "bg-[var(--color-primary)] text-white" : "bg-[var(--color-background)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
+        }`}
+      >YES</button>
+      <button
+        onClick={() => onChange(false)}
+        className={`px-5 py-2 text-xs font-extrabold tracking-wider transition-all ${
+          !value ? "bg-[var(--color-primary)] text-white" : "bg-[var(--color-background)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
+        }`}
+      >NO</button>
     </div>
   );
 }
@@ -472,18 +457,20 @@ function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) =>
 function Stepper({ value, onChange, min, max }: { value: number; onChange: (v: number) => void; min: number; max: number }) {
   return (
     <div className="flex items-center gap-2.5">
-      <button onClick={() => onChange(Math.max(min, value - 1))} className="w-8 h-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-primary)] transition-colors">
+      <button onClick={() => onChange(Math.max(min, value - 1))} className="w-8 h-8 rounded-sm border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-primary)] transition-colors">
         <Minus size={14} />
       </button>
       <span className="text-base font-extrabold font-mono w-6 text-center">{value}</span>
-      <button onClick={() => onChange(Math.min(max, value + 1))} className="w-8 h-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-primary)] transition-colors">
+      <button onClick={() => onChange(Math.min(max, value + 1))} className="w-8 h-8 rounded-sm border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-primary)] transition-colors">
         <Plus size={14} />
       </button>
     </div>
   );
 }
 
-function TimeInput({ placeholder, value, onChange, maxLength, width = "w-14" }: { placeholder: string; value: string; onChange: (v: string) => void; maxLength: number; width?: string }) {
+function TimeInput({ placeholder, value, onChange, maxLength, width = "w-14" }: {
+  placeholder: string; value: string; onChange: (v: string) => void; maxLength: number; width?: string;
+}) {
   return (
     <input
       type="text"
@@ -491,17 +478,7 @@ function TimeInput({ placeholder, value, onChange, maxLength, width = "w-14" }: 
       placeholder={placeholder}
       value={value}
       onChange={e => onChange(e.target.value.replace(/\D/g, ""))}
-      className={`${width} text-center font-bold font-mono text-lg border border-[var(--color-border)] rounded-xl bg-[var(--color-background)] py-2.5 text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none transition-colors`}
+      className={`${width} text-center font-bold font-mono text-lg border border-[var(--color-border)] rounded bg-[var(--color-background)] py-2.5 text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors`}
     />
-  );
-}
-
-function Ticks() {
-  return (
-    <div className="flex gap-[3px] items-end h-4">
-      {[8, 5, 14, 8, 5, 14, 8, 5, 14, 8, 5, 14, 8, 5, 14].map((h, i) => (
-        <div key={i} className="w-[3px] rounded-sm" style={{ height: h, backgroundColor: i % 3 === 2 ? "var(--color-primary)" : "var(--color-border)" }} />
-      ))}
-    </div>
   );
 }

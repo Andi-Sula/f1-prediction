@@ -172,7 +172,7 @@ function ForgotPasswordContent() {
       <div className="w-full max-w-md space-y-6">
         {/* Header */}
         <div className="text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center mx-auto shadow-lg shadow-[var(--color-primary)]/20">
+          <div className="w-14 h-14 rounded bg-[var(--color-primary)] flex items-center justify-center mx-auto shadow-lg shadow-[var(--color-primary)]/20">
             <KeyRound size={24} className="text-white" />
           </div>
           <div>
@@ -191,13 +191,13 @@ function ForgotPasswordContent() {
 
         {/* Messages */}
         {error && (
-          <div className="flex items-center gap-2 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 rounded-xl px-4 py-3 text-sm text-[var(--color-primary)]">
+          <div className="flex items-center gap-2 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 rounded-sm px-4 py-3 text-sm text-[var(--color-primary)]">
             <AlertCircle size={16} className="shrink-0" />
             {error}
           </div>
         )}
         {success && (
-          <div className="flex items-center gap-2 bg-[var(--color-green)]/10 border border-[var(--color-green)]/20 rounded-xl px-4 py-3 text-sm text-[var(--color-green)]">
+          <div className="flex items-center gap-2 bg-[var(--color-green)]/10 border border-[var(--color-green)]/20 rounded-sm px-4 py-3 text-sm text-[var(--color-green)]">
             <CheckCircle2 size={16} className="shrink-0" />
             {success}
           </div>
@@ -218,14 +218,14 @@ function ForgotPasswordContent() {
                   onChange={(e) => { setEmail(e.target.value); setError(""); }}
                   placeholder="your@email.com"
                   required
-                  className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl pl-11 pr-4 py-3.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)]/50 focus:border-[var(--color-primary)] focus:outline-none transition-colors"
+                  className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-sm pl-11 pr-4 py-3.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)]/50 focus:border-[var(--color-primary)] focus:outline-none transition-colors"
                 />
               </div>
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[var(--color-primary)] text-white rounded-xl py-3.5 text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-[var(--color-primary)] text-white rounded-sm py-3.5 text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? <><Loader2 size={16} className="animate-spin" /> Sending...</> : "Send Reset Code"}
             </button>
@@ -250,7 +250,7 @@ function ForgotPasswordContent() {
                     onChange={(e) => handleChange(i, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(i, e)}
                     onPaste={i === 0 ? handlePaste : undefined}
-                    className={`w-11 h-14 text-center text-xl font-extrabold rounded-xl border-2 transition-all focus:outline-none ${
+                    className={`w-11 h-14 text-center text-xl font-extrabold rounded-sm border-2 transition-all focus:outline-none ${
                       digit
                         ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
                         : "border-[var(--color-border)] bg-[var(--color-surface)]"
@@ -263,7 +263,7 @@ function ForgotPasswordContent() {
             <button
               onClick={handleConfirmOTP}
               disabled={otp.join("").length !== 8}
-              className="w-full bg-[var(--color-primary)] text-white rounded-xl py-3.5 text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-[var(--color-primary)] text-white rounded-sm py-3.5 text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Continue
             </button>
@@ -299,7 +299,7 @@ function ForgotPasswordContent() {
                   onChange={(e) => { setNewPassword(e.target.value); setError(""); }}
                   placeholder="••••••••"
                   required
-                  className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl pl-11 pr-12 py-3.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)]/50 focus:border-[var(--color-primary)] focus:outline-none transition-colors"
+                  className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-sm pl-11 pr-12 py-3.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)]/50 focus:border-[var(--color-primary)] focus:outline-none transition-colors"
                 />
                 <button
                   type="button"
@@ -333,7 +333,7 @@ function ForgotPasswordContent() {
                   onChange={(e) => { setConfirmPassword(e.target.value); setError(""); }}
                   placeholder="••••••••"
                   required
-                  className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl pl-11 pr-4 py-3.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)]/50 focus:border-[var(--color-primary)] focus:outline-none transition-colors"
+                  className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-sm pl-11 pr-4 py-3.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)]/50 focus:border-[var(--color-primary)] focus:outline-none transition-colors"
                 />
               </div>
               {confirmPassword && newPassword !== confirmPassword && (
@@ -344,7 +344,7 @@ function ForgotPasswordContent() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[var(--color-primary)] text-white rounded-xl py-3.5 text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-[var(--color-primary)] text-white rounded-sm py-3.5 text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? <><Loader2 size={16} className="animate-spin" /> Resetting...</> : "Reset Password"}
             </button>

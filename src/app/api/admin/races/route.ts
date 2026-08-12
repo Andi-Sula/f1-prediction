@@ -59,7 +59,10 @@ export async function PUT(request: NextRequest) {
     if (name !== undefined) updates.name = name;
     if (date !== undefined) updates.date = date;
     if (qualifying_time !== undefined) updates.qualifying_time = qualifying_time;
-    if (status !== undefined) updates.status = status;
+    if (status !== undefined) {
+      updates.status = status;
+      updates.locked = status !== "upcoming";
+    }
 
     const { data, error: dbError } = await supabaseAdmin
       .from("races")

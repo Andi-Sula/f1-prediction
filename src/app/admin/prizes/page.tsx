@@ -149,7 +149,7 @@ export default function PrizesPage() {
       </div>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm font-medium">
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-sm text-sm font-medium">
           {error}
           <button onClick={() => setError("")} className="ml-2 underline">dismiss</button>
         </div>
@@ -160,10 +160,10 @@ export default function PrizesPage() {
         {[1, 2, 3].map((pos) => {
           const prize = prizes.find(p => p.position === pos);
           return (
-            <div key={pos} className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-6 text-center space-y-4">
+            <div key={pos} className="bg-[var(--color-surface)] rounded border border-[var(--color-border)] p-6 text-center space-y-4">
               <div className="flex items-center justify-center">
                 <div
-                  className="w-16 h-16 rounded-2xl flex items-center justify-center"
+                  className="w-16 h-16 rounded flex items-center justify-center"
                   style={{ backgroundColor: `${positionColors[pos - 1]}20` }}
                 >
                   {prize?.icon_url ? (
@@ -183,7 +183,7 @@ export default function PrizesPage() {
               </div>
               <button
                 onClick={() => openEdit(pos)}
-                className="flex items-center justify-center gap-2 w-full py-2.5 border border-[var(--color-border)] rounded-xl text-sm font-semibold hover:border-[var(--color-primary)]/50 hover:bg-[var(--color-primary)]/5 transition-all"
+                className="flex items-center justify-center gap-2 w-full py-2.5 border border-[var(--color-border)] rounded-sm text-sm font-semibold hover:border-[var(--color-primary)]/50 hover:bg-[var(--color-primary)]/5 transition-all"
               >
                 <Pencil size={14} />
                 Edit Prize
@@ -194,7 +194,7 @@ export default function PrizesPage() {
       </div>
 
       {/* Homepage Preview Section */}
-      <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-6 space-y-4">
+      <div className="bg-[var(--color-surface)] rounded border border-[var(--color-border)] p-6 space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-sm flex items-center gap-2">
             <Globe size={16} className="text-[var(--color-text-secondary)]" />
@@ -233,7 +233,7 @@ export default function PrizesPage() {
             <button
               onClick={handleDiscard}
               disabled={discarding}
-              className="flex items-center justify-center gap-2 flex-1 py-3 border border-[var(--color-border)] rounded-xl text-sm font-bold hover:bg-white/[0.02] transition-all disabled:opacity-50"
+              className="flex items-center justify-center gap-2 flex-1 py-3 border border-[var(--color-border)] rounded-sm text-sm font-bold hover:bg-white/[0.02] transition-all disabled:opacity-50"
             >
               {discarding ? <Loader2 size={14} className="animate-spin" /> : <X size={14} />}
               {discarding ? "Discarding..." : "Discard Draft"}
@@ -241,7 +241,7 @@ export default function PrizesPage() {
             <button
               onClick={handlePublish}
               disabled={publishing}
-              className="flex items-center justify-center gap-2 flex-1 py-3 bg-[var(--color-primary)] text-white rounded-xl text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50"
+              className="flex items-center justify-center gap-2 flex-1 py-3 bg-[var(--color-primary)] text-white rounded-sm text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50"
             >
               {publishing ? <Loader2 size={14} className="animate-spin" /> : <Globe size={14} />}
               {publishing ? "Publishing..." : "Save Changes"}
@@ -253,19 +253,19 @@ export default function PrizesPage() {
       {/* Edit Modal */}
       {editPosition && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setEditPosition(null)}>
-          <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-6 w-full max-w-sm space-y-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+          <div className="bg-[var(--color-surface)] rounded border border-[var(--color-border)] p-6 w-full max-w-sm space-y-4 shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h3 className="font-extrabold text-lg flex items-center gap-2">
                 <Award size={18} style={{ color: positionColors[editPosition - 1] }} />
                 {positionTitles[editPosition - 1]}
               </h3>
-              <button onClick={() => setEditPosition(null)} className="w-8 h-8 rounded-lg hover:bg-[var(--color-background)] flex items-center justify-center transition-colors">
+              <button onClick={() => setEditPosition(null)} className="w-8 h-8 rounded-sm hover:bg-[var(--color-background)] flex items-center justify-center transition-colors">
                 <X size={16} />
               </button>
             </div>
 
             {/* Position label (read-only) */}
-            <div className="bg-[var(--color-background)] rounded-xl px-4 py-3 flex items-center gap-2">
+            <div className="bg-[var(--color-background)] rounded-sm px-4 py-3 flex items-center gap-2">
               <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-extrabold"
                 style={{ backgroundColor: positionColors[editPosition - 1] }}>
                 {editPosition}
@@ -280,18 +280,18 @@ export default function PrizesPage() {
                 placeholder="e.g. Ferrari Team T-Shirt"
                 value={newLabel}
                 onChange={e => setNewLabel(e.target.value)}
-                className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors"
+                className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-sm px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors"
               />
             </div>
 
             {/* Icon preview */}
             <div className="flex items-center justify-center py-2">
               {preview ? (
-                <div className="w-20 h-20 rounded-2xl border border-[var(--color-border)] overflow-hidden bg-[var(--color-background)] flex items-center justify-center">
+                <div className="w-20 h-20 rounded border border-[var(--color-border)] overflow-hidden bg-[var(--color-background)] flex items-center justify-center">
                   <img src={preview} alt="Preview" className="w-14 h-14 object-contain" />
                 </div>
               ) : (
-                <div className="w-20 h-20 rounded-2xl border border-dashed border-[var(--color-border)] flex items-center justify-center bg-[var(--color-background)]">
+                <div className="w-20 h-20 rounded border border-dashed border-[var(--color-border)] flex items-center justify-center bg-[var(--color-background)]">
                   <ImageIcon size={28} className="text-[var(--color-text-secondary)]" />
                 </div>
               )}
@@ -302,7 +302,7 @@ export default function PrizesPage() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center justify-center gap-2 w-full py-3 border border-[var(--color-border)] rounded-xl text-sm font-semibold hover:bg-white/[0.02] transition-all"
+                className="flex items-center justify-center gap-2 w-full py-3 border border-[var(--color-border)] rounded-sm text-sm font-semibold hover:bg-white/[0.02] transition-all"
               >
                 <Upload size={14} />
                 Upload Prize Icon
@@ -319,15 +319,15 @@ export default function PrizesPage() {
                 placeholder="https://..."
                 value={newIconUrl.startsWith("data:") ? "" : newIconUrl}
                 onChange={e => { setNewIconUrl(e.target.value); setPreview(e.target.value || null); }}
-                className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-xs text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors"
+                className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-sm px-4 py-2.5 text-xs text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors"
               />
             </div>
 
             <div className="flex gap-3 pt-2">
-              <button onClick={() => setEditPosition(null)} className="flex-1 flex items-center justify-center gap-2 py-3 border border-[var(--color-border)] rounded-xl text-sm font-bold hover:bg-white/[0.02] transition-all">
+              <button onClick={() => setEditPosition(null)} className="flex-1 flex items-center justify-center gap-2 py-3 border border-[var(--color-border)] rounded-sm text-sm font-bold hover:bg-white/[0.02] transition-all">
                 <X size={14} /> Cancel
               </button>
-              <button onClick={handleSave} disabled={saving || !newLabel.trim()} className="flex-1 flex items-center justify-center gap-2 py-3 bg-[var(--color-primary)] text-white rounded-xl text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50">
+              <button onClick={handleSave} disabled={saving || !newLabel.trim()} className="flex-1 flex items-center justify-center gap-2 py-3 bg-[var(--color-primary)] text-white rounded-sm text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50">
                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                 {saving ? "Saving..." : "Save"}
               </button>

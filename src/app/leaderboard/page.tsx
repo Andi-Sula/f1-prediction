@@ -1,122 +1,204 @@
+"use client";
 export const dynamic = "force-dynamic";
 
-import { Trophy, Users, Medal, ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { supabaseAdmin } from "@/lib/supabase-server";
 
-interface Prize { position: number; icon_url: string; label: string; }
-
-async function getLeaderboard() {
-  try {
-    const { data, error } = await supabaseAdmin
-      .from("users")
-      .select("id, username, name, surname, points, predictions_count")
-      .eq("status", "active")
-      .neq("role", "admin")
-      .order("points", { ascending: false })
-      .limit(50);
-    if (error) throw error;
-    return (data || []).map((u, i) => ({
-      id: u.id,
-      rank: i + 1,
-      name: `${u.name} ${u.surname.charAt(0)}.`,
-      points: u.points || 0,
-      avatar: ((u.name || "")[0] + (u.surname || "")[0]).toUpperCase(),
-    }));
-  } catch { return []; }
+interface LeaderboardUser {
+  id: string;
+  rank: number;
+  username: string;
+  initials: string;
+  points: number;
+  wins: number | null;
+  correct: number | null;
 }
 
-async function getPrizeIcons(): Promise<Prize[]> {
-  try {
-    const { data, error } = await supabaseAdmin
-      .from("prizes")
-      .select("position, published_icon_url, published_label")
-      .eq("active", true)
-      .order("position", { ascending: true });
-    if (error) throw error;
-    return (data || []).map((p) => ({
-      position: p.position,
-      icon_url: p.published_icon_url,
-      label: p.published_label,
-    }));
-  } catch { return []; }
+interface CompletedRace {
+  id: string;
+  round: number;
+  name: string;
+  country: string;
 }
 
-export default async function LeaderboardPage() {
-  const [leaderboard, prizes] = await Promise.all([
-    getLeaderboard() as Promise<Array<{ id: string; rank: number; name: string; points: number; avatar: string }>>,
-    getPrizeIcons(),
-  ]);
+export default function LeaderboardPage() {
+  const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
+  const [completedRaces, setCompletedRaces] = useState<CompletedRace[]>([]);
+  const [activeTab, setActiveTab] = useState("season");
 
-  const prizeMap = new Map(prizes.map(p => [p.position, p]));
+  useEffect(() => {
+    fetch("/api/leaderboard")
+      .then(r => r.json())
+      .then(setLeaderboard)
+      .catch(() => {});
+    fetch("/api/races")
+      .then(r => r.json())
+      .then((races: { id: string; round: number; name: string; country: string; status: string }[]) => {
+        const done = races
+          .filter(r => r.status === "completed")
+          .sort((a, b) => b.round - a.round)
+          .slice(0, 3);
+        setCompletedRaces(done);
+      })
+      .catch(() => {});
+  }, []);
 
-  const badgeColor = (rank: number) =>
-    rank === 1 ? "var(--color-gold)" : rank === 2 ? "var(--color-silver)" : rank === 3 ? "var(--color-bronze)" : "transparent";
+  const top3 = leaderboard.slice(0, 3);
+  const podiumOrder = top3.length >= 3 ? [top3[1], top3[0], top3[2]] : top3;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6 sm:space-y-8 min-h-[calc(100vh-4rem)] pb-24 md:pb-10">
-      {/* Header */}
-      <div className="text-center space-y-3">
-        <div className="w-16 h-16 rounded-2xl bg-[var(--color-gold)]/10 flex items-center justify-center mx-auto">
-          <Trophy size={28} className="text-[var(--color-gold)]" />
-        </div>
-        <h1 className="text-2xl font-extrabold tracking-tight">Live Leaderboard</h1>
-        <p className="text-sm text-[var(--color-text-secondary)]">Updated after every race weekend</p>
-      </div>
+    <div className="min-h-[calc(100vh-4rem)] pb-24 md:pb-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8">
+        {/* Title */}
+        <h1 className="text-4xl sm:text-5xl font-black tracking-tight">LEADERBOARD</h1>
 
-      {/* Stats */}
-      <div className="bg-gradient-to-r from-[var(--color-surface)] to-[var(--color-primary)]/5 rounded-2xl border border-[var(--color-border)] p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Users size={18} className="text-[var(--color-primary)]" />
-          <h3 className="font-bold text-sm">Season Overview</h3>
-        </div>
-        <div className="grid grid-cols-1 gap-4">
-          <div className="text-center bg-[var(--color-background)] rounded-xl py-4">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Users size={16} className="text-[var(--color-text-secondary)]" />
-            </div>
-            <div className="text-2xl font-extrabold">{leaderboard.length}</div>
-            <div className="text-[10px] text-[var(--color-text-secondary)] uppercase tracking-wider font-bold mt-0.5">Active Players</div>
-          </div>
-        </div>
-      </div>
-
-      {/* List */}
-      <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden">
-        <div className="px-5 py-3 border-b border-[var(--color-border)]">
-          <div className="flex items-center text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">
-            <span className="w-10">#</span>
-            <span className="flex-1">Player</span>
-            <span>Points</span>
-          </div>
-        </div>
-        {leaderboard.map((item, index) => (
-          <Link key={item.rank} href={`/leaderboard/${item.id}`} className={`group flex items-center gap-3 px-5 py-3.5 hover:bg-white/[0.03] transition-colors cursor-pointer ${index > 0 ? "border-t border-[var(--color-border)]" : ""}`}>
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-extrabold shrink-0"
-              style={{
-                backgroundColor: badgeColor(item.rank),
-                color: item.rank <= 3 ? "#fff" : "var(--color-text)",
-                border: item.rank > 3 ? "1px solid var(--color-border)" : "none",
-              }}
+        {/* Tabs */}
+        <div className="mt-6 flex items-center gap-6 border-b border-[var(--color-border)]">
+          <button
+            onClick={() => setActiveTab("season")}
+            className={`pb-3 text-sm tracking-wider transition-colors relative ${
+              activeTab === "season" ? "text-white font-medium" : "text-[var(--color-text-secondary)]/50 font-normal hover:text-[var(--color-text-secondary)]"
+            }`}
+          >
+            SEASON TOTAL
+            {activeTab === "season" && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[var(--color-primary)]" />}
+          </button>
+          {completedRaces.map(race => (
+            <button
+              key={race.id}
+              onClick={() => setActiveTab(race.id)}
+              className={`pb-3 text-sm tracking-wider transition-colors relative ${
+                activeTab === race.id ? "text-white font-medium" : "text-[var(--color-text-secondary)]/50 font-normal hover:text-[var(--color-text-secondary)]"
+              }`}
             >
-              {item.rank}
-            </div>
-            {prizeMap.has(item.rank) && (
-              <img src={prizeMap.get(item.rank)!.icon_url} alt={prizeMap.get(item.rank)!.label} className="w-6 h-6 object-contain shrink-0" />
+              <span className="mr-1">{race.country}</span>RD{race.round}
+              {activeTab === race.id && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[var(--color-primary)]" />}
+            </button>
+          ))}
+        </div>
+
+        {/* Main layout */}
+        <div className="mt-8 flex flex-col lg:flex-row gap-8">
+          {/* Left column */}
+          <div className="flex-1 min-w-0">
+            {/* Podium */}
+            {top3.length >= 3 && (
+              <div className="grid grid-cols-3 gap-4 mb-8">
+                {podiumOrder.map((user, idx) => {
+                  const actualRank = idx === 1 ? 1 : idx === 0 ? 2 : 3;
+                  const colors = ["var(--color-silver)", "var(--color-gold)", "var(--color-bronze)"];
+                  const borderColors = ["var(--color-silver)", "var(--color-gold)", "var(--color-bronze)"];
+                  return (
+                    <div
+                      key={user.id}
+                      className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded p-5 text-center"
+                      style={{ borderTopWidth: "3px", borderTopColor: borderColors[idx] }}
+                    >
+                      {actualRank === 1 && <div className="text-[10px] font-extrabold text-[var(--color-gold)] tracking-wider mb-1">◆ LEADER</div>}
+                      <div className="text-3xl font-black text-[var(--color-text-secondary)]">{actualRank}</div>
+                      <div
+                        className="w-12 h-12 rounded-full mx-auto mt-3 flex items-center justify-center text-white font-extrabold text-sm"
+                        style={{ backgroundColor: colors[idx], border: `3px solid ${borderColors[idx]}` }}
+                      >
+                        {user.initials}
+                      </div>
+                      <div className="mt-3 text-sm font-extrabold">{user.username}</div>
+                      <div className="text-2xl font-black mt-1" style={{ color: actualRank === 1 ? "var(--color-gold)" : "var(--color-text)" }}>
+                        {user.points}
+                      </div>
+                      <div className="text-[10px] text-[var(--color-text-secondary)] mt-1">
+                        {user.wins ?? "-"} win{user.wins !== 1 ? "s" : ""} · {user.correct ?? "-"} correct
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             )}
-            <div className="w-9 h-9 rounded-full bg-[var(--color-background)] flex items-center justify-center text-[11px] font-bold text-[var(--color-text-secondary)] shrink-0">
-              {item.avatar}
+
+            {/* Table */}
+            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded overflow-hidden">
+              <div className="grid grid-cols-[3rem_1fr_5rem_4rem_5rem] px-5 py-3 border-b border-[var(--color-border)] text-[10px] font-extrabold text-[var(--color-text-secondary)] uppercase tracking-wider">
+                <span>#</span>
+                <span>PREDICTOR</span>
+                <span className="text-right">POINTS</span>
+                <span className="text-right">WINS</span>
+                <span className="text-right">CORRECT</span>
+              </div>
+
+              {leaderboard.map((user, i) => (
+                <Link
+                  key={user.id}
+                  href={`/leaderboard/${user.id}`}
+                  className={`grid grid-cols-[3rem_1fr_5rem_4rem_5rem] px-5 py-3.5 items-center hover:bg-[var(--color-border)]/20 transition-colors ${
+                    i > 0 ? "border-t border-[var(--color-border)]" : ""
+                  }`}
+                >
+                  <span className="text-sm font-extrabold" style={{ color: user.rank === 1 ? 'var(--color-gold)' : user.rank === 2 ? 'var(--color-silver)' : user.rank === 3 ? 'var(--color-bronze)' : 'var(--color-text-secondary)' }}>
+                    {user.rank}
+                  </span>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-sm bg-[var(--color-border)] flex items-center justify-center text-[10px] font-bold text-[var(--color-text-secondary)] shrink-0">
+                      {user.initials}
+                    </div>
+                    <span className="text-sm font-bold truncate">{user.username}</span>
+                  </div>
+                  <span className="text-sm font-extrabold font-mono tabular-nums text-right">{user.points}</span>
+                  <span className="text-sm font-mono tabular-nums text-right text-[var(--color-gold)]">{user.wins ?? "-"}</span>
+                  <span className="text-sm font-mono tabular-nums text-right">{user.correct ?? "-"}</span>
+                </Link>
+              ))}
+
+              {leaderboard.length === 0 && (
+                <p className="text-sm text-[var(--color-text-secondary)] p-5">No leaderboard data yet</p>
+              )}
             </div>
-            <span className="flex-1 text-sm font-semibold group-hover:text-[var(--color-primary)] transition-colors">{item.name}</span>
-            <span className="text-sm font-extrabold tabular-nums">{item.points} <span className="text-[var(--color-text-secondary)] font-medium text-xs">pts</span></span>
-            <ChevronRight size={14} className="text-[var(--color-text-secondary)] group-hover:text-[var(--color-primary)] group-hover:translate-x-0.5 transition-all shrink-0" />
-          </Link>
-        ))}
-        {leaderboard.length === 0 && (
-          <p className="text-sm text-[var(--color-text-secondary)] p-5">No leaderboard data</p>
-        )}
+          </div>
+
+          {/* Right sidebar */}
+          <aside className="w-full lg:w-80 shrink-0 space-y-6">
+            {/* Round Winners */}
+            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded p-5">
+              <div className="text-[10px] font-extrabold text-[var(--color-text-secondary)] tracking-[0.15em] mb-4">ROUND WINNERS</div>
+              {completedRaces.length === 0 && (
+                <p className="text-sm text-[var(--color-text-secondary)]">No completed races yet</p>
+              )}
+              {completedRaces.map(race => (
+                <div key={race.id} className={`py-3 ${completedRaces.indexOf(race) > 0 ? "border-t border-[var(--color-border)]" : ""}`}>
+                  <div className="flex items-start gap-3">
+                    <span className="text-sm font-extrabold text-[var(--color-text-secondary)] shrink-0">{race.country}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[10px] text-[var(--color-text-secondary)]">ROUND {race.round} — {race.name.replace(" Grand Prix", " GP").toUpperCase()}</div>
+                      <div className="text-sm font-extrabold mt-0.5">—</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Scoring Guide */}
+            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded p-5">
+              <div className="text-[10px] font-extrabold text-[var(--color-text-secondary)] tracking-[0.15em] mb-4">SCORING GUIDE</div>
+              <div className="space-y-3">
+                <ScoreRow icon="🏆" label="Race Podium" pts="+58" />
+                <ScoreRow icon="🌧️" label="Race Conditions" pts="+20" />
+                <ScoreRow icon="⚡" label="Qualifying Pole" pts="+51" />
+              </div>
+            </div>
+          </aside>
+        </div>
       </div>
+    </div>
+  );
+}
+
+function ScoreRow({ icon, label, pts }: { icon: string; label: string; pts: string }) {
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <span className="text-sm">{icon}</span>
+        <span className="text-sm text-[var(--color-text-secondary)]">{label}</span>
+      </div>
+      <span className="text-sm font-extrabold text-[var(--color-primary)]">{pts}</span>
     </div>
   );
 }

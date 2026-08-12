@@ -142,14 +142,14 @@ export default function RacesPage() {
           <h1 className="text-2xl font-extrabold tracking-tight">Race Calendar</h1>
           <p className="text-sm text-[var(--color-text-secondary)] mt-1">Manage the F1 race schedule with qualifying times</p>
         </div>
-        <button onClick={openAdd} className="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 shadow-lg shadow-[var(--color-primary)]/20 transition-all">
+        <button onClick={openAdd} className="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2.5 rounded-sm text-sm font-bold hover:opacity-90 shadow-lg shadow-[var(--color-primary)]/20 transition-all">
           <Plus size={16} />
           Add Race
         </button>
       </div>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm font-medium">
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-sm text-sm font-medium">
           {error}
           <button onClick={() => setError("")} className="ml-2 underline">dismiss</button>
         </div>
@@ -158,9 +158,9 @@ export default function RacesPage() {
       {/* Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setShowForm(false)}>
-          <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-6 w-full max-w-md space-y-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+          <div className="bg-[var(--color-surface)] rounded border border-[var(--color-border)] p-6 w-full max-w-md space-y-4 shadow-2xl" onClick={e => e.stopPropagation()}>
             {formError && (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm font-medium">
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-sm text-sm font-medium">
                 {formError}
               </div>
             )}
@@ -169,28 +169,28 @@ export default function RacesPage() {
                 <FlagTriangleRight size={18} className="text-[var(--color-primary)]" />
                 {editRace ? "Edit Race" : "Add Race"}
               </h3>
-              <button onClick={() => setShowForm(false)} className="w-8 h-8 rounded-lg hover:bg-[var(--color-background)] flex items-center justify-center transition-colors">
+              <button onClick={() => setShowForm(false)} className="w-8 h-8 rounded-sm hover:bg-[var(--color-background)] flex items-center justify-center transition-colors">
                 <X size={16} />
               </button>
             </div>
             <div>
               <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Race Name</label>
               <input placeholder="e.g. Monaco Grand Prix" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+                className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-sm px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
             </div>
             <div>
               <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">
                 Qualifying Date & Time
               </label>
               <input type="datetime-local" value={form.qualifying_time} onChange={e => setForm({ ...form, qualifying_time: e.target.value })}
-                className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-sm text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+                className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-sm px-4 py-3 text-sm text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
             </div>
             <div>
               <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">
                 Race Date
               </label>
               <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })}
-                className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-sm text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+                className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-sm px-4 py-3 text-sm text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
             </div>
             <div>
               <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Status</label>
@@ -208,10 +208,10 @@ export default function RacesPage() {
               />
             </div>
             <div className="flex gap-3 pt-2">
-              <button onClick={() => setShowForm(false)} className="flex-1 flex items-center justify-center gap-2 py-3 border border-[var(--color-border)] rounded-xl text-sm font-bold hover:bg-white/[0.02] transition-all">
+              <button onClick={() => setShowForm(false)} className="flex-1 flex items-center justify-center gap-2 py-3 border border-[var(--color-border)] rounded-sm text-sm font-bold hover:bg-white/[0.02] transition-all">
                 <X size={14} /> Cancel
               </button>
-              <button onClick={handleSave} disabled={saving} className="flex-1 flex items-center justify-center gap-2 py-3 bg-[var(--color-primary)] text-white rounded-xl text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50">
+              <button onClick={handleSave} disabled={saving} className="flex-1 flex items-center justify-center gap-2 py-3 bg-[var(--color-primary)] text-white rounded-sm text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50">
                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                 {saving ? "Saving..." : "Save"}
               </button>
@@ -221,7 +221,7 @@ export default function RacesPage() {
       )}
 
       {/* Table */}
-      <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-x-auto">
+      <div className="bg-[var(--color-surface)] rounded border border-[var(--color-border)] overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-[var(--color-border)]">
@@ -254,16 +254,16 @@ export default function RacesPage() {
                   )}
                 </td>
                 <td className="px-5 py-3.5">
-                  <span className={`inline-block text-[10px] font-extrabold px-2.5 py-1 rounded-lg uppercase tracking-wider ${statusStyle(race.status)}`}>
+                  <span className={`inline-block text-[10px] font-extrabold px-2.5 py-1 rounded-sm uppercase tracking-wider ${statusStyle(race.status)}`}>
                     {race.status}
                   </span>
                 </td>
                 <td className="px-5 py-3.5 text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <button onClick={() => openEdit(race)} className="w-8 h-8 rounded-lg hover:bg-[var(--color-primary)]/10 flex items-center justify-center transition-colors" title="Edit">
+                    <button onClick={() => openEdit(race)} className="w-8 h-8 rounded-sm hover:bg-[var(--color-primary)]/10 flex items-center justify-center transition-colors" title="Edit">
                       <Pencil size={14} className="text-[var(--color-primary)]" />
                     </button>
-                    <button onClick={() => handleDelete(race.id)} className="w-8 h-8 rounded-lg hover:bg-red-500/10 flex items-center justify-center transition-colors" title="Delete">
+                    <button onClick={() => handleDelete(race.id)} className="w-8 h-8 rounded-sm hover:bg-red-500/10 flex items-center justify-center transition-colors" title="Delete">
                       <Trash2 size={14} className="text-[var(--color-text-secondary)] hover:text-red-400" />
                     </button>
                   </div>

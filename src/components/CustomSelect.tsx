@@ -34,7 +34,7 @@ export default function CustomSelect({ value, onChange, options, placeholder = "
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-sm text-left cursor-pointer hover:border-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors"
+        className="w-full flex items-center justify-between bg-[var(--color-background)] border border-[var(--color-border)] rounded px-4 py-3 text-sm text-left cursor-pointer hover:border-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors"
       >
         <span className={selected ? "text-[var(--color-text)]" : "text-[var(--color-text-secondary)]"}>
           {selected ? selected.label : placeholder}
@@ -43,7 +43,7 @@ export default function CustomSelect({ value, onChange, options, placeholder = "
       </button>
 
       {open && (
-        <div className="absolute z-50 mt-1.5 w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl shadow-xl shadow-black/20 overflow-hidden">
+        <div className="absolute z-50 mt-1.5 w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded shadow-xl shadow-black/20 overflow-hidden">
           <div className="max-h-64 overflow-y-auto py-1">
             {options.map(opt => {
               const active = opt.value === value;
