@@ -19,6 +19,7 @@ interface Race {
   date: string;
   race_time: string | null;
   qualifying_time: string | null;
+  last_quali_time: string | null;
   status: string;
   season: number;
 }
@@ -28,7 +29,7 @@ export default function RacesPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editRace, setEditRace] = useState<Race | null>(null);
-  const [form, setForm] = useState({ name: "", date: "", qualifying_time: "", status: "upcoming" });
+  const [form, setForm] = useState({ name: "", date: "", qualifying_time: "", last_quali_time: "", status: "upcoming" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [formError, setFormError] = useState("");
@@ -54,7 +55,7 @@ export default function RacesPage() {
   const openAdd = () => {
     setEditRace(null);
     setFormError("");
-    setForm({ name: "", date: "", qualifying_time: "", status: "upcoming" });
+    setForm({ name: "", date: "", qualifying_time: "", last_quali_time: "", status: "upcoming" });
     setShowForm(true);
   };
 
@@ -73,6 +74,7 @@ export default function RacesPage() {
       name: race.name,
       date: race.date,
       qualifying_time: toLocalInput(race.qualifying_time),
+      last_quali_time: race.last_quali_time || "",
       status: race.status,
     });
     setShowForm(true);
@@ -94,6 +96,7 @@ export default function RacesPage() {
         name: form.name,
         date: form.date,
         qualifying_time: toISO(form.qualifying_time),
+        last_quali_time: form.last_quali_time || null,
         status: form.status,
       };
       if (editRace) {
@@ -191,6 +194,13 @@ export default function RacesPage() {
               </label>
               <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })}
                 className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-sm px-4 py-3 text-sm text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">
+                Last Qualifying Time <span className="text-[var(--color-text-secondary)]/50">(optional)</span>
+              </label>
+              <input type="text" placeholder="e.g. 1:25.096" value={form.last_quali_time} onChange={e => setForm({ ...form, last_quali_time: e.target.value })}
+                className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-sm px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
             </div>
             <div>
               <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Status</label>

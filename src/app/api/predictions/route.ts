@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
       raceName: race.name,
       raceStatus: race.status,
       qualifyingTime: race.qualifyingTime || null,
+      lastQualiTime: race.lastQualiTime || null,
       prediction: prediction?.driverPredictions || {
         race: { p1: null, p2: null, p3: null },
         qualifying: { p1: null, p2: null, p3: null },

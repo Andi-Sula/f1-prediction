@@ -14,13 +14,14 @@ export async function PUT(
   const { id } = await params;
 
   try {
-    const { name, date, race_time, qualifying_time, status } = await request.json();
+    const { name, date, race_time, qualifying_time, status, last_quali_time } = await request.json();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updates: Record<string, any> = { updated_at: new Date().toISOString() };
     if (name !== undefined) updates.name = name;
     if (date !== undefined) updates.date = date;
     if (race_time !== undefined) updates.race_time = race_time;
     if (qualifying_time !== undefined) updates.qualifying_time = qualifying_time;
+    if (last_quali_time !== undefined) updates.last_quali_time = last_quali_time;
     if (status !== undefined) updates.status = status;
 
     // Only one event can be in an active status at a time

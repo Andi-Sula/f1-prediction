@@ -23,6 +23,7 @@ export interface Race {
   name: string;
   date: string;
   qualifyingTime: string | null;
+  lastQualiTime: string | null;
   status: string;
   season: number;
   locked: boolean;
@@ -72,6 +73,7 @@ function mapRace(row: any): Race | null {
     name: row.name,
     date: row.date,
     qualifyingTime: row.qualifying_time,
+    lastQualiTime: row.last_quali_time || null,
     status: row.status,
     season: row.season,
     locked: row.locked,
@@ -268,6 +270,7 @@ export async function updateRace(
     name: string;
     date: string;
     qualifyingTime: string;
+    lastQualiTime: string | null;
     status: string;
     locked: boolean;
     resultsPublished: boolean;
@@ -278,6 +281,7 @@ export async function updateRace(
   if (updates.name !== undefined) dbUpdates.name = updates.name;
   if (updates.date !== undefined) dbUpdates.date = updates.date;
   if (updates.qualifyingTime !== undefined) dbUpdates.qualifying_time = updates.qualifyingTime;
+  if (updates.lastQualiTime !== undefined) dbUpdates.last_quali_time = updates.lastQualiTime;
   if (updates.status !== undefined) dbUpdates.status = updates.status;
   if (updates.locked !== undefined) dbUpdates.locked = updates.locked;
   if (updates.resultsPublished !== undefined) dbUpdates.results_published = updates.resultsPublished;

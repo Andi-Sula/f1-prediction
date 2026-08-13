@@ -7,7 +7,7 @@ import QualifyingCountdown from "@/components/QualifyingCountdown";
 import { supabase } from "@/lib/supabase";
 
 interface Driver { code: string; name: string; team: string; }
-interface Race { id: string; name: string; round: number; qualifying_time: string | null; status: string; }
+interface Race { id: string; name: string; round: number; qualifying_time: string | null; last_quali_time: string | null; status: string; }
 
 const SECTIONS = [
   { id: "podium", label: "RACE PODIUM", icon: "🏆", pts: 58 },
@@ -35,9 +35,13 @@ export default function PredictionsPage() {
   const [raceStatus, setRaceStatus] = useState("upcoming");
   const [raceId, setRaceId] = useState("");
   const [qualifyingTime, setQualifyingTime] = useState<string | null>(null);
+  const [lastQualiTime, setLastQualiTime] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState("podium");
 
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
+  const minRef = useRef<HTMLInputElement | null>(null);
+  const secRef = useRef<HTMLInputElement | null>(null);
+  const msRef = useRef<HTMLInputElement | null>(null);
   const allLocked = raceStatus !== "upcoming";
 
   useEffect(() => {
@@ -67,6 +71,7 @@ export default function PredictionsPage() {
         setRaceId(data.raceId || "");
         setRaceStatus(data.raceStatus || "upcoming");
         setQualifyingTime(data.qualifyingTime || null);
+        setLastQualiTime(data.lastQualiTime || null);
         const p = data.prediction;
         if (p) {
           if (p.race) { setRaceP1(p.race.p1 || ""); setRaceP2(p.race.p2 || ""); setRaceP3(p.race.p3 || ""); }
@@ -293,13 +298,17 @@ export default function PredictionsPage() {
                 <div className="mt-8">
                   <div className="text-[10px] font-extrabold text-[var(--color-text-secondary)] tracking-[0.12em] mb-3">BEST LAP TIME PREDICTION</div>
                   <div className="flex items-center gap-2">
-                    <TimeInput placeholder="MM" value={poleMin} onChange={setPoleMin} maxLength={2} />
+                    <TimeInput placeholder="MM" value={poleMin} onChange={setPoleMin} maxLength={2} nextRef={secRef} inputRef={minRef} />
                     <span className="text-lg font-bold text-[var(--color-text-secondary)]">:</span>
-                    <TimeInput placeholder="SS" value={poleSec} onChange={setPoleSec} maxLength={2} />
+                    <TimeInput placeholder="SS" value={poleSec} onChange={setPoleSec} maxLength={2} nextRef={msRef} inputRef={secRef} />
                     <span className="text-lg font-bold text-[var(--color-text-secondary)]">.</span>
-                    <TimeInput placeholder="mmm" value={poleMs} onChange={setPoleMs} maxLength={3} width="w-16" />
+                    <TimeInput placeholder="mmm" value={poleMs} onChange={setPoleMs} maxLength={3} width="w-16" inputRef={msRef} />
                   </div>
-                  <div className="text-xs text-[var(--color-text-secondary)] mt-2">Format: 01:25.000</div>
+                  <div className="text-xs text-[var(--color-text-secondary)] mt-2">
+                    {lastQualiTime
+                      ? <span>Last year pole: <span className="font-mono font-bold text-[var(--color-primary)]">{lastQualiTime}</span></span>
+                      : "Format: 01:25.000"}
+                  </div>
                 </div>
                 <ScoringBox rules={[
                   "P1 correct position: 10 pts — in top 3: 5 pts",
@@ -468,16 +477,24 @@ function Stepper({ value, onChange, min, max }: { value: number; onChange: (v: n
   );
 }
 
-function TimeInput({ placeholder, value, onChange, maxLength, width = "w-14" }: {
+function TimeInput({ placeholder, value, onChange, maxLength, width = "w-14", nextRef, inputRef }: {
   placeholder: string; value: string; onChange: (v: string) => void; maxLength: number; width?: string;
+  nextRef?: React.RefObject<HTMLInputElement | null>; inputRef?: React.RefObject<HTMLInputElement | null>;
 }) {
   return (
     <input
+      ref={inputRef}
       type="text"
       maxLength={maxLength}
       placeholder={placeholder}
       value={value}
-      onChange={e => onChange(e.target.value.replace(/\D/g, ""))}
+      onChange={e => {
+        const val = e.target.value.replace(/\D/g, "");
+        onChange(val);
+        if (val.length >= maxLength && nextRef?.current) {
+          nextRef.current.focus();
+        }
+      }}
       className={`${width} text-center font-bold font-mono text-lg border border-[var(--color-border)] rounded bg-[var(--color-background)] py-2.5 text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors`}
     />
   );

@@ -17,7 +17,7 @@ export async function GET() {
 
     const { data, error } = await supabaseAdmin
       .from("races")
-      .select("id, round, name, circuit, country, date, race_time, qualifying_time, status")
+      .select("id, round, name, circuit, country, date, race_time, qualifying_time, last_quali_time, status")
       .order("round", { ascending: true });
 
     if (error) throw error;
