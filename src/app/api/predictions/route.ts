@@ -76,6 +76,16 @@ export async function POST(request: NextRequest) {
         { status: 403 }
       );
     }
+    // Close predictions 5 minutes before qualifying
+    if (race.qualifyingTime) {
+      const cutoff = new Date(new Date(race.qualifyingTime).getTime() - 5 * 60 * 1000);
+      if (new Date() >= cutoff) {
+        return NextResponse.json(
+          { error: "Predictions close 5 minutes before qualifying. You can no longer submit." },
+          { status: 403 }
+        );
+      }
+    }
 
     const saveData = { ...body };
     delete saveData.raceId;

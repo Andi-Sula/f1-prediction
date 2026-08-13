@@ -8,7 +8,8 @@ interface QualifyingCountdownProps {
 }
 
 function getTimeLeft(target: string) {
-  const diff = new Date(target).getTime() - Date.now();
+  // Predictions close 5 minutes before qualifying
+  const diff = new Date(target).getTime() - 5 * 60 * 1000 - Date.now();
   if (diff <= 0) return null;
   const days = Math.floor(diff / 86400000);
   const hours = Math.floor((diff % 86400000) / 3600000);
@@ -46,7 +47,7 @@ export default function QualifyingCountdown({ qualifyingTime, compact }: Qualify
     <div className="bg-[var(--color-surface)] rounded border border-[var(--color-border)] p-5">
       <div className="flex items-center gap-2 mb-3">
         <Clock size={14} className="text-[var(--color-primary)]" />
-        <span className="text-[10px] font-extrabold text-[var(--color-text-secondary)] tracking-[0.15em] uppercase">QUALIFYING STARTS IN</span>
+        <span className="text-[10px] font-extrabold text-[var(--color-text-secondary)] tracking-[0.15em] uppercase">PREDICTIONS CLOSE IN</span>
       </div>
       <div className="flex gap-3">
         {[

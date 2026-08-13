@@ -2,13 +2,15 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 
 async function autoTransitionRaces() {
-  const now = new Date().toISOString();
+  const now = new Date();
+  // Lock predictions 5 minutes before qualifying starts
+  const lockTime = new Date(now.getTime() + 5 * 60 * 1000).toISOString();
   await supabaseAdmin
     .from("races")
-    .update({ status: "qualifying", locked: true, updated_at: now })
+    .update({ status: "qualifying", locked: true, updated_at: now.toISOString() })
     .eq("status", "upcoming")
     .not("qualifying_time", "is", null)
-    .lte("qualifying_time", now);
+    .lte("qualifying_time", lockTime);
 }
 
 export async function GET() {

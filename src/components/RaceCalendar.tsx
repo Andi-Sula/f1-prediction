@@ -10,6 +10,7 @@ interface Race {
   country: string;
   date: string;
   qualifying_time: string | null;
+  race_time: string | null;
   status: "completed" | "active" | "upcoming" | "qualifying" | "waiting_race" | "racing" | "cancelled";
 }
 
@@ -38,7 +39,15 @@ export default function RaceCalendar() {
   const fmtDate = (race: Race) => {
     const dt = race.qualifying_time;
     if (!dt) return null;
-    return new Date(dt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    const qualiDate = new Date(dt);
+    const raceDate = race.race_time ? new Date(race.race_time) : null;
+    if (raceDate && raceDate.getTime() !== qualiDate.getTime()) {
+      if (qualiDate.getMonth() === raceDate.getMonth()) {
+        return `${qualiDate.toLocaleDateString("en-US", { month: "short" })} ${qualiDate.getDate()}-${raceDate.getDate()}, ${raceDate.getFullYear()}`;
+      }
+      return `${qualiDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${raceDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}, ${raceDate.getFullYear()}`;
+    }
+    return qualiDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   };
 
   const completed = races.filter(r => r.status === "completed" || r.status === "cancelled").length;

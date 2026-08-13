@@ -9,6 +9,7 @@ interface Race {
   round: number;
   name: string;
   qualifying_time: string | null;
+  race_time: string | null;
   status: string;
 }
 
@@ -24,7 +25,8 @@ function CountdownBlock({ value, label }: { value: string; label: string }) {
 }
 
 function getTimeLeft(target: string) {
-  const diff = new Date(target).getTime() - Date.now();
+  // Predictions close 5 minutes before qualifying
+  const diff = new Date(target).getTime() - 5 * 60 * 1000 - Date.now();
   if (diff <= 0) return null;
   const days = Math.floor(diff / 86400000);
   const hours = Math.floor((diff % 86400000) / 3600000);
@@ -108,7 +110,17 @@ export default function HomeHero() {
 
             {race?.qualifying_time && (
               <p className="text-sm text-white/50 mt-4">
-                {new Date(race.qualifying_time).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                {(() => {
+                  const qualiDate = new Date(race.qualifying_time);
+                  const raceDate = race.race_time ? new Date(race.race_time) : null;
+                  if (raceDate && raceDate.getTime() !== qualiDate.getTime()) {
+                    if (qualiDate.getMonth() === raceDate.getMonth()) {
+                      return `${qualiDate.toLocaleDateString("en-US", { month: "long" })} ${qualiDate.getDate()}-${raceDate.getDate()}, ${raceDate.getFullYear()}`;
+                    }
+                    return `${qualiDate.toLocaleDateString("en-US", { month: "long", day: "numeric" })} - ${raceDate.toLocaleDateString("en-US", { month: "long", day: "numeric" })}, ${raceDate.getFullYear()}`;
+                  }
+                  return qualiDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+                })()}
               </p>
             )}
 
