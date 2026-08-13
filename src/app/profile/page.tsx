@@ -17,6 +17,9 @@ import {
   Zap,
   Tv,
   Loader2,
+  Pencil,
+  X,
+  Check,
 } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 import { useAuth } from "@/components/AuthProvider";
@@ -27,6 +30,9 @@ interface ProfileData {
   email: string;
   name: string;
   surname: string;
+  address?: string;
+  birthday?: string;
+  telephone?: string;
   points: number;
   rank: number;
   predictionsCount: number;
@@ -42,6 +48,10 @@ export default function ProfilePage() {
   const [digitalbId, setDigitalbId] = useState("");
   const [digitalbLinked, setDigitalbLinked] = useState(false);
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ name: "", surname: "", username: "", address: "", birthday: "", telephone: "" });
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -55,6 +65,45 @@ export default function ProfilePage() {
       if (json.user) setProfile(json.user);
     })();
   }, []);
+
+  const openEdit = () => {
+    if (!profile) return;
+    setEditForm({
+      name: profile.name || "",
+      surname: profile.surname || "",
+      username: profile.username || "",
+      address: profile.address || "",
+      birthday: profile.birthday || "",
+      telephone: profile.telephone || "",
+    });
+    setEditError("");
+    setEditing(true);
+  };
+
+  const handleEditSave = async () => {
+    setEditSaving(true);
+    setEditError("");
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error("Not authenticated");
+      const res = await fetch("/api/auth/profile", {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(editForm),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || "Failed to save");
+      setProfile(prev => prev ? { ...prev, ...editForm } : prev);
+      setEditing(false);
+    } catch (err: unknown) {
+      setEditError(err instanceof Error ? err.message : "Save failed");
+    } finally {
+      setEditSaving(false);
+    }
+  };
 
   const initials = profile
     ? ((profile.name?.[0] || "") + (profile.surname?.[0] || "")).toUpperCase() || profile.username[0]?.toUpperCase()
@@ -92,6 +141,95 @@ export default function ProfilePage() {
             <div className="text-[10px] text-[var(--color-text-secondary)] uppercase tracking-wider font-bold mt-0.5">Predictions</div>
           </div>
         </div>
+      </div>
+
+      {/* Edit Profile */}
+      <div className="bg-[var(--color-surface)] rounded border border-[var(--color-border)] p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-bold text-sm flex items-center gap-2">
+            <Pencil size={16} className="text-[var(--color-primary)]" />
+            Personal Info
+          </h3>
+          {!editing && (
+            <button onClick={openEdit} className="text-xs font-bold text-[var(--color-primary)] hover:underline">
+              Edit
+            </button>
+          )}
+        </div>
+
+        {editing ? (
+          <div className="space-y-3">
+            {editError && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-3 py-2 rounded-sm text-xs font-medium">{editError}</div>
+            )}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">First Name</label>
+                <input placeholder="John" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                  className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-sm px-3 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)]/50 focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Last Name</label>
+                <input placeholder="Doe" value={editForm.surname} onChange={e => setEditForm({ ...editForm, surname: e.target.value })}
+                  className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-sm px-3 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)]/50 focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+              </div>
+            </div>
+            <div>
+              <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Username</label>
+              <input placeholder="username" value={editForm.username} onChange={e => setEditForm({ ...editForm, username: e.target.value })}
+                className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-sm px-3 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)]/50 focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Address</label>
+              <input placeholder="123 Main St, City" value={editForm.address} onChange={e => setEditForm({ ...editForm, address: e.target.value })}
+                className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-sm px-3 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)]/50 focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Birthday</label>
+                <input type="date" value={editForm.birthday} onChange={e => setEditForm({ ...editForm, birthday: e.target.value })}
+                  className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-sm px-3 py-2.5 text-sm text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Telephone</label>
+                <input type="tel" placeholder="+1 234 567 890" value={editForm.telephone} onChange={e => setEditForm({ ...editForm, telephone: e.target.value })}
+                  className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-sm px-3 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)]/50 focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+              </div>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button onClick={() => setEditing(false)} className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-[var(--color-border)] rounded-sm text-sm font-bold hover:bg-white/[0.02] transition-all">
+                <X size={14} /> Cancel
+              </button>
+              <button onClick={handleEditSave} disabled={editSaving} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[var(--color-primary)] text-white rounded-sm text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50">
+                {editSaving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                {editSaving ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="divide-y divide-[var(--color-border)]">
+            <div className="flex justify-between py-2.5">
+              <span className="text-xs text-[var(--color-text-secondary)]">Username</span>
+              <span className="text-sm font-medium">{profile?.username || "—"}</span>
+            </div>
+            <div className="flex justify-between py-2.5">
+              <span className="text-xs text-[var(--color-text-secondary)]">Email</span>
+              <span className="text-sm font-medium">{profile?.email || "—"}</span>
+            </div>
+            <div className="flex justify-between py-2.5">
+              <span className="text-xs text-[var(--color-text-secondary)]">Address</span>
+              <span className="text-sm font-medium">{profile?.address || "—"}</span>
+            </div>
+            <div className="flex justify-between py-2.5">
+              <span className="text-xs text-[var(--color-text-secondary)]">Birthday</span>
+              <span className="text-sm font-medium">{profile?.birthday ? new Date(profile.birthday).toLocaleDateString() : "—"}</span>
+            </div>
+            <div className="flex justify-between py-2.5">
+              <span className="text-xs text-[var(--color-text-secondary)]">Telephone</span>
+              <span className="text-sm font-medium">{profile?.telephone || "—"}</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Boosts & Promotions */}

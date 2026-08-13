@@ -11,6 +11,7 @@ import {
   X,
   LogIn,
   LogOut,
+  Gift,
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
@@ -19,6 +20,7 @@ const navItems = [
   { href: "/", label: "HOME", icon: Home },
   { href: "/predictions", label: "PREDICT", icon: Crosshair },
   { href: "/leaderboard", label: "LEADERBOARD", icon: Trophy },
+  { href: "/prizes", label: "PRIZES", icon: Gift },
   { href: "/profile", label: "PROFILE", icon: User },
 ];
 

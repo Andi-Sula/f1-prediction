@@ -142,8 +142,8 @@ export async function updateUser(
   if (updates.username !== undefined) dbUpdates.username = updates.username;
   if (updates.email !== undefined) dbUpdates.email = updates.email;
   if (updates.address !== undefined) dbUpdates.address = updates.address;
-  if (updates.birthday !== undefined) dbUpdates.birthday = updates.birthday;
-  if (updates.telephone !== undefined) dbUpdates.telephone = updates.telephone;
+  if (updates.birthday !== undefined) dbUpdates.birthday = updates.birthday || null;
+  if (updates.telephone !== undefined) dbUpdates.telephone = updates.telephone || null;
   if (updates.role !== undefined) dbUpdates.role = updates.role;
   if (updates.predictions !== undefined) dbUpdates.predictions_count = updates.predictions;
 

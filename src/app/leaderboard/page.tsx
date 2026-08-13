@@ -50,7 +50,7 @@ export default function LeaderboardPage() {
     <div className="min-h-[calc(100vh-4rem)] pb-24 md:pb-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8">
         {/* Title */}
-        <h1 className="text-4xl sm:text-5xl font-black tracking-tight">LEADERBOARD</h1>
+        <h1 className="text-4xl sm:text-5xl font-black tracking-tight"><span className="text-red-600">LEADER</span>BOARD</h1>
 
         {/* Tabs */}
         <div className="mt-6 flex items-center gap-6 border-b border-[var(--color-border)]">
@@ -94,7 +94,7 @@ export default function LeaderboardPage() {
                       className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded p-5 text-center"
                       style={{ borderTopWidth: "3px", borderTopColor: borderColors[idx] }}
                     >
-                      {actualRank === 1 && <div className="text-[10px] font-extrabold text-[var(--color-gold)] tracking-wider mb-1">◆ LEADER</div>}
+                      {actualRank === 1 && <div className="text-[10px] font-extrabold text-red-600 tracking-wider mb-1">◆ LEADER</div>}
                       <div className="text-3xl font-black text-[var(--color-text-secondary)]">{actualRank}</div>
                       <div
                         className="w-12 h-12 rounded-full mx-auto mt-3 flex items-center justify-center text-white font-extrabold text-sm"
@@ -131,7 +131,7 @@ export default function LeaderboardPage() {
                   href={`/leaderboard/${user.id}`}
                   className={`grid grid-cols-[3rem_1fr_5rem_4rem_5rem] px-5 py-3.5 items-center hover:bg-[var(--color-border)]/20 transition-colors ${
                     i > 0 ? "border-t border-[var(--color-border)]" : ""
-                  }`}
+                  } ${user.rank === 1 ? "bg-red-900/30 border-l-2 border-l-red-600" : ""}`}
                 >
                   <span className="text-sm font-extrabold" style={{ color: user.rank === 1 ? 'var(--color-gold)' : user.rank === 2 ? 'var(--color-silver)' : user.rank === 3 ? 'var(--color-bronze)' : 'var(--color-text-secondary)' }}>
                     {user.rank}
@@ -157,22 +157,24 @@ export default function LeaderboardPage() {
           {/* Right sidebar */}
           <aside className="w-full lg:w-80 shrink-0 space-y-6">
             {/* Round Winners */}
-            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded p-5">
-              <div className="text-[10px] font-extrabold text-[var(--color-text-secondary)] tracking-[0.15em] mb-4">ROUND WINNERS</div>
+            <div>
+              <div className="text-[10px] font-extrabold text-[var(--color-primary)] tracking-[0.15em] mb-4">ROUND WINNERS</div>
               {completedRaces.length === 0 && (
                 <p className="text-sm text-[var(--color-text-secondary)]">No completed races yet</p>
               )}
-              {completedRaces.map(race => (
-                <div key={race.id} className={`py-3 ${completedRaces.indexOf(race) > 0 ? "border-t border-[var(--color-border)]" : ""}`}>
-                  <div className="flex items-start gap-3">
-                    <span className="text-sm font-extrabold text-[var(--color-text-secondary)] shrink-0">{race.country}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[10px] text-[var(--color-text-secondary)]">ROUND {race.round} — {race.name.replace(" Grand Prix", " GP").toUpperCase()}</div>
-                      <div className="text-sm font-extrabold mt-0.5">—</div>
+              <div className="space-y-3">
+                {completedRaces.map(race => (
+                  <div key={race.id} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded p-4">
+                    <div className="flex items-start gap-3">
+                      <span className="text-sm font-extrabold text-[var(--color-text-secondary)] shrink-0 mt-1">{race.country}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[10px] text-[var(--color-text-secondary)] tracking-wider">ROUND {race.round} — {race.name.replace(" Grand Prix", " GP").toUpperCase()}</div>
+                        <div className="text-sm font-extrabold mt-0.5">—</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             {/* Scoring Guide */}
