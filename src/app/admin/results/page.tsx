@@ -69,12 +69,12 @@ export default function ResultsPage() {
         const json = await res.json();
         if (json.success && json.races) {
           setRaces(json.races);
-          // Auto-select the most recent completed race
-          const completed = json.races.filter((r: Race) => r.status === "completed");
-          if (completed.length > 0) {
-            setSelectedRace(completed[completed.length - 1].id);
-          } else if (json.races.length > 0) {
-            setSelectedRace(json.races[json.races.length - 1].id);
+          // Auto-select the first active/in-progress race that hasn't had results published yet
+          const active = json.races.find((r: Race) => r.status === "active" && !r.results_published)
+            || json.races.find((r: Race) => r.status !== "completed" && !r.results_published)
+            || json.races[json.races.length - 1];
+          if (active) {
+            setSelectedRace(active.id);
           }
         }
       }
