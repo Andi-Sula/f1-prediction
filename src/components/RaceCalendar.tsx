@@ -11,7 +11,7 @@ interface Race {
   date: string;
   qualifying_time: string | null;
   race_time: string | null;
-  status: "completed" | "active" | "upcoming" | "qualifying" | "waiting_race" | "racing" | "cancelled";
+  status: "completed" | "upcoming" | "qualifying" | "race_day" | "cancelled";
 }
 
 export default function RaceCalendar() {
@@ -25,7 +25,7 @@ export default function RaceCalendar() {
   useEffect(() => {
     if (!races.length || !trackRef.current) return;
     // Focus: active race first, then first upcoming, else nothing
-    let idx = races.findIndex(r => ["active", "qualifying", "waiting_race", "racing"].includes(r.status));
+    let idx = races.findIndex(r => ["qualifying", "race_day"].includes(r.status));
     if (idx < 0) idx = races.findIndex(r => r.status === "upcoming");
     if (idx < 0) return;
     const el = trackRef.current.children[idx] as HTMLElement;
@@ -72,8 +72,8 @@ export default function RaceCalendar() {
 
         <div ref={trackRef} className="flex gap-3 overflow-x-auto scrollbar-hide py-2 px-1" style={{ scrollbarWidth: "none" }}>
           {races.map((race) => {
-            const isLive = ["qualifying", "waiting_race", "racing", "active"].includes(race.status);
-            const hasActive = races.some(r => ["qualifying", "waiting_race", "racing", "active"].includes(r.status));
+            const isLive = ["qualifying", "race_day"].includes(race.status);
+            const hasActive = races.some(r => ["qualifying", "race_day"].includes(r.status));
             const isNextUpcoming = !hasActive && race.status === "upcoming" && race.id === races.find(r => r.status === "upcoming")?.id;
             const isDone = race.status === "completed";
             const isCancelled = race.status === "cancelled";

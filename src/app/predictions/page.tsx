@@ -48,7 +48,7 @@ export default function PredictionsPage() {
     fetch("/api/drivers").then(r => r.json()).then(setDrivers).catch(() => {});
     fetch("/api/races").then(r => r.json()).then((data: Race[]) => {
       setRaces(data);
-      const active = data.find(r => ["qualifying", "waiting_race", "racing"].includes(r.status));
+      const active = data.find(r => ["qualifying", "race_day"].includes(r.status));
       const upcoming = data.find(r => r.status === "upcoming");
       const defaultRace = active || upcoming || data[0];
       if (defaultRace) setSelectedRaceId(defaultRace.id);

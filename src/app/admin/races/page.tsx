@@ -124,7 +124,7 @@ export default function RacesPage() {
   };
 
   const statusStyle = (status: string) =>
-    status === "active" || status === "qualifying"
+    status === "qualifying" || status === "race_day"
       ? "bg-[var(--color-green)]/10 text-[var(--color-green)] border border-[var(--color-green)]/20"
       : status === "completed"
       ? "bg-[var(--color-text-secondary)]/10 text-[var(--color-text-secondary)] border border-[var(--color-text-secondary)]/20"
@@ -210,8 +210,7 @@ export default function RacesPage() {
                 options={[
                   { value: "upcoming", label: "Upcoming" },
                   { value: "qualifying", label: "Qualifying" },
-                  { value: "waiting_race", label: "Waiting Race" },
-                  { value: "racing", label: "Racing" },
+                  { value: "race_day", label: "Race Day" },
                   { value: "completed", label: "Completed" },
                   { value: "cancelled", label: "Cancelled" },
                 ]}

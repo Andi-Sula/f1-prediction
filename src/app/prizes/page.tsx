@@ -31,7 +31,7 @@ export default function PrizesPage() {
     fetch("/api/races")
       .then(r => r.json())
       .then((races: Race[]) => {
-        const active = races.find(r => ["qualifying", "waiting_race", "racing", "upcoming"].includes(r.status));
+        const active = races.find(r => ["qualifying", "race_day", "upcoming"].includes(r.status));
         if (active) setLiveRace(active);
       })
       .catch(() => {});

@@ -70,7 +70,8 @@ export default function ResultsPage() {
         if (json.success && json.races) {
           setRaces(json.races);
           // Auto-select the first active/in-progress race that hasn't had results published yet
-          const active = json.races.find((r: Race) => r.status === "active" && !r.results_published)
+          const active = json.races.find((r: Race) => r.status === "race_day" && !r.results_published)
+            || json.races.find((r: Race) => r.status === "qualifying" && !r.results_published)
             || json.races.find((r: Race) => r.status !== "completed" && !r.results_published)
             || json.races[json.races.length - 1];
           if (active) {

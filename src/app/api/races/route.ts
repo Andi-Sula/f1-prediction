@@ -3,14 +3,25 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 
 async function autoTransitionRaces() {
   const now = new Date();
-  // Lock predictions 5 minutes before qualifying starts
+  const nowISO = now.toISOString();
+
+  // upcoming → qualifying: lock predictions 5 minutes before qualifying starts
   const lockTime = new Date(now.getTime() + 5 * 60 * 1000).toISOString();
   await supabaseAdmin
     .from("races")
-    .update({ status: "qualifying", locked: true, updated_at: now.toISOString() })
+    .update({ status: "qualifying", locked: true, updated_at: nowISO })
     .eq("status", "upcoming")
     .not("qualifying_time", "is", null)
     .lte("qualifying_time", lockTime);
+
+  // qualifying → race_day: transition when race date arrives
+  // Race date is stored as DATE (the day of the race). Transition at start of that day (UTC).
+  const todayStr = now.toISOString().split("T")[0]; // YYYY-MM-DD
+  await supabaseAdmin
+    .from("races")
+    .update({ status: "race_day", updated_at: nowISO })
+    .eq("status", "qualifying")
+    .lte("date", todayStr);
 }
 
 export async function GET() {

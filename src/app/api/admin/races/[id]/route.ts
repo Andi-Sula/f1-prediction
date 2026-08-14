@@ -25,11 +25,11 @@ export async function PUT(
     if (status !== undefined) updates.status = status;
 
     // Only one event can be in an active status at a time
-    if (status && ["qualifying", "waiting_race", "racing"].includes(status)) {
+    if (status && ["qualifying", "race_day"].includes(status)) {
       const { data: activeRace } = await supabaseAdmin
         .from("races")
         .select("id, name")
-        .in("status", ["qualifying", "waiting_race", "racing"])
+        .in("status", ["qualifying", "race_day"])
         .neq("id", id)
         .limit(1)
         .single();
@@ -80,7 +80,7 @@ export async function PUT(
           for (const other of otherRaces) {
             const otherDates: { date: string; type: string }[] = [];
             if (other.qualifying_time) otherDates.push({ date: toDateStr(other.qualifying_time), type: "qualifying" });
-            if (other.race_time) otherDates.push({ date: toDateStr(other.race_time), type: "racing" });
+            if (other.race_time) otherDates.push({ date: toDateStr(other.race_time), type: "race" });
 
             for (const d of otherDates) {
               if (thisDates.has(d.date)) {

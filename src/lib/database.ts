@@ -256,7 +256,7 @@ export async function getActiveRace(): Promise<Race | null> {
   const { data, error } = await supabaseAdmin
     .from("races")
     .select("*")
-    .in("status", ["upcoming", "qualifying", "waiting_race", "racing"])
+    .in("status", ["upcoming", "qualifying", "race_day"])
     .order("date", { ascending: true })
     .limit(1)
     .single();

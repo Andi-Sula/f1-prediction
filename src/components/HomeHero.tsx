@@ -43,7 +43,7 @@ export default function HomeHero() {
 
   useEffect(() => {
     fetch("/api/races").then(r => r.json()).then((data: Race[]) => {
-      const active = data.find(r => ["qualifying", "waiting_race", "racing"].includes(r.status));
+      const active = data.find(r => ["qualifying", "race_day"].includes(r.status));
       const upcoming = data.find(r => r.status === "upcoming");
       setRace(active || upcoming || data[0] || null);
     }).catch(() => {});
