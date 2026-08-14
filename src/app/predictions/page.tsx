@@ -7,7 +7,7 @@ import QualifyingCountdown from "@/components/QualifyingCountdown";
 import { supabase } from "@/lib/supabase";
 
 interface Driver { code: string; name: string; team: string; }
-interface Race { id: string; name: string; round: number; qualifying_time: string | null; race_time: string | null; last_quali_time: string | null; status: string; }
+interface Race { id: string; name: string; round: number; date: string; qualifying_time: string | null; race_time: string | null; last_quali_time: string | null; status: string; }
 
 const SECTIONS = [
   { id: "podium", label: "RACE PODIUM", icon: "🏆", pts: 58 },
@@ -182,10 +182,10 @@ export default function PredictionsPage() {
               let dateLabel = "";
               if (r.qualifying_time) {
                 const qualiDate = new Date(r.qualifying_time);
-                const raceDate = r.race_time ? new Date(r.race_time) : null;
-                if (raceDate && raceDate.getTime() !== qualiDate.getTime() && qualiDate.getMonth() === raceDate.getMonth()) {
+                const raceDate = r.date ? new Date(r.date + "T12:00:00") : null;
+                if (raceDate && raceDate.getDate() !== qualiDate.getDate() && qualiDate.getMonth() === raceDate.getMonth()) {
                   dateLabel = ` — ${qualiDate.toLocaleDateString("en-US", { month: "short" })} ${qualiDate.getDate()}-${raceDate.getDate()}`;
-                } else if (raceDate && raceDate.getTime() !== qualiDate.getTime()) {
+                } else if (raceDate && raceDate.getDate() !== qualiDate.getDate()) {
                   dateLabel = ` — ${qualiDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${raceDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
                 } else {
                   dateLabel = ` — ${qualiDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;

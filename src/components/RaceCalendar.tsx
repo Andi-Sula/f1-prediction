@@ -40,8 +40,9 @@ export default function RaceCalendar() {
     const dt = race.qualifying_time;
     if (!dt) return null;
     const qualiDate = new Date(dt);
-    const raceDate = race.race_time ? new Date(race.race_time) : null;
-    if (raceDate && raceDate.getTime() !== qualiDate.getTime()) {
+    // Use race.date (DATE field, always updated by admin) instead of race_time
+    const raceDate = race.date ? new Date(race.date + "T12:00:00") : null;
+    if (raceDate && raceDate.getDate() !== qualiDate.getDate()) {
       if (qualiDate.getMonth() === raceDate.getMonth()) {
         return `${qualiDate.toLocaleDateString("en-US", { month: "short" })} ${qualiDate.getDate()}-${raceDate.getDate()}, ${raceDate.getFullYear()}`;
       }
