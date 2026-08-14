@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from "react";
 import { supabase } from "@/lib/supabase";
+import { useTheme } from "@/components/ThemeProvider";
 
 interface User {
   id: string;
@@ -61,6 +62,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const skipAuthChange = useRef(false);
+  const { isDark, setThemePreference } = useTheme();
+  const themeSyncRef = useRef(false);
 
   // Fetch app-specific profile from backend
   const fetchProfile = useCallback(async () => {
@@ -70,6 +73,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const data = await res.json();
         if (data.success) {
           setUser(data.user);
+          // Sync theme from server preference
+          const serverDark = data.user.themePreference !== 'light';
+          setThemePreference(serverDark);
+          themeSyncRef.current = true;
           return;
         }
       }
@@ -77,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Profile fetch failed
     }
     setUser(null);
-  }, []);
+  }, [setThemePreference]);
 
   useEffect(() => {
     // Check initial Supabase session
@@ -107,6 +114,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => subscription.unsubscribe();
   }, [fetchProfile]);
+
+  // Save theme preference to server when user toggles theme
+  useEffect(() => {
+    if (!user || !themeSyncRef.current) return;
+    const theme = isDark ? 'dark' : 'light';
+    apiFetch('/api/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify({ themePreference: theme }),
+    }).catch(() => {});
+  }, [isDark, user]);
 
   const login = useCallback(async (email: string, password: string) => {
     try {

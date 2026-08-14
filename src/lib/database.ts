@@ -15,6 +15,7 @@ export interface User {
   points: number;
   rank: number | null;
   predictions: number;
+  themePreference: string;
   createdAt: string;
 }
 
@@ -61,6 +62,7 @@ function mapUser(row: any): User | null {
     points: row.points,
     rank: row.rank,
     predictions: row.predictions_count,
+    themePreference: row.theme_preference || 'dark',
     createdAt: row.created_at,
   };
 }
@@ -132,6 +134,7 @@ export async function updateUser(
     telephone: string;
     role: string;
     predictions: number;
+    themePreference: string;
   }>
 ): Promise<User | null> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -148,6 +151,7 @@ export async function updateUser(
   if (updates.telephone !== undefined) dbUpdates.telephone = updates.telephone || null;
   if (updates.role !== undefined) dbUpdates.role = updates.role;
   if (updates.predictions !== undefined) dbUpdates.predictions_count = updates.predictions;
+  if (updates.themePreference !== undefined) dbUpdates.theme_preference = updates.themePreference;
 
   const { data, error } = await supabaseAdmin
     .from("users")

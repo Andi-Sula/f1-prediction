@@ -47,6 +47,7 @@ export async function GET(request: NextRequest) {
         rank: rank || 0,
         predictionsCount: count || 0,
         authProvider: user.authProvider,
+        themePreference: user.themePreference || 'dark',
         initials: ((user.name || "")[0] + (user.surname || "")[0]).toUpperCase() || "U",
       },
     });
@@ -63,7 +64,7 @@ export async function PUT(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const allowed = ["name", "surname", "username", "address", "birthday", "telephone"];
+    const allowed = ["name", "surname", "username", "address", "birthday", "telephone", "themePreference"];
     const updates: Record<string, string | null> = {};
     for (const key of allowed) {
       if (body[key] !== undefined) {
@@ -73,6 +74,10 @@ export async function PUT(request: NextRequest) {
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ success: false, message: "No valid fields to update" }, { status: 400 });
+    }
+
+    if (updates.themePreference && !["dark", "light"].includes(updates.themePreference)) {
+      return NextResponse.json({ success: false, message: "Invalid theme preference" }, { status: 400 });
     }
 
     if (updates.username) {
