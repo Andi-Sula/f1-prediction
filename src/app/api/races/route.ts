@@ -22,6 +22,14 @@ async function autoTransitionRaces() {
     .update({ status: "race_day", updated_at: nowISO })
     .eq("status", "qualifying")
     .lte("date", todayStr);
+
+  // upcoming → race_day: catch races that were never transitioned to qualifying
+  // (e.g. qualifying_time was not set) but whose race date has already arrived
+  await supabaseAdmin
+    .from("races")
+    .update({ status: "race_day", locked: true, updated_at: nowISO })
+    .eq("status", "upcoming")
+    .lte("date", todayStr);
 }
 
 export async function GET() {

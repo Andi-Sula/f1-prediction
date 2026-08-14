@@ -26,7 +26,13 @@ export default function RaceCalendar() {
     if (!races.length || !trackRef.current) return;
     // Focus: active race first, then first upcoming, else nothing
     let idx = races.findIndex(r => ["qualifying", "race_day"].includes(r.status));
-    if (idx < 0) idx = races.findIndex(r => r.status === "upcoming");
+    if (idx < 0) {
+      const upcomingRaces = races
+        .map((r, i) => ({ r, i }))
+        .filter(({ r }) => r.status === "upcoming")
+        .sort((a, b) => new Date(a.r.date).getTime() - new Date(b.r.date).getTime());
+      idx = upcomingRaces.length > 0 ? upcomingRaces[0].i : -1;
+    }
     if (idx < 0) return;
     const el = trackRef.current.children[idx] as HTMLElement;
     if (el) trackRef.current.scrollTo({ left: el.offsetLeft - trackRef.current.offsetWidth / 2 + el.offsetWidth / 2, behavior: "smooth" });
@@ -75,7 +81,8 @@ export default function RaceCalendar() {
           {races.map((race) => {
             const isLive = ["qualifying", "race_day"].includes(race.status);
             const hasActive = races.some(r => ["qualifying", "race_day"].includes(r.status));
-            const isNextUpcoming = !hasActive && race.status === "upcoming" && race.id === races.find(r => r.status === "upcoming")?.id;
+            const nearestUpcoming = races.filter(r => r.status === "upcoming").sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+            const isNextUpcoming = !hasActive && race.status === "upcoming" && race.id === nearestUpcoming?.id;
             const isDone = race.status === "completed";
             const isCancelled = race.status === "cancelled";
 

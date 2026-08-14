@@ -49,7 +49,10 @@ export default function PredictionsPage() {
     fetch("/api/races").then(r => r.json()).then((data: Race[]) => {
       setRaces(data);
       const active = data.find(r => ["qualifying", "race_day"].includes(r.status));
-      const upcoming = data.find(r => r.status === "upcoming");
+      const upcomingRaces = data.filter(r => r.status === "upcoming");
+      const upcoming = upcomingRaces.length > 0
+        ? upcomingRaces.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0]
+        : undefined;
       const defaultRace = active || upcoming || data[0];
       if (defaultRace) setSelectedRaceId(defaultRace.id);
     }).catch(() => {});
