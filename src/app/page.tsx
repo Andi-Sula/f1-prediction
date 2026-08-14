@@ -41,18 +41,31 @@ async function getTopPredictors() {
   try {
     const { data, error } = await supabaseAdmin
       .from("users")
-      .select("id, username, name, surname, points, predictions_count")
+      .select("id, username, name, surname, points")
       .eq("status", "active")
       .neq("role", "admin")
       .order("points", { ascending: false })
       .limit(5);
     if (error) throw error;
+
+    // Count actual predictions from user_race_scores
+    const userIds = (data || []).map((u) => u.id);
+    const { data: scores } = await supabaseAdmin
+      .from("user_race_scores")
+      .select("user_id")
+      .in("user_id", userIds);
+
+    const predictionCounts: Record<string, number> = {};
+    for (const s of scores || []) {
+      predictionCounts[s.user_id] = (predictionCounts[s.user_id] || 0) + 1;
+    }
+
     return (data || []).map((u, i) => ({
       rank: i + 1,
       username: u.username,
       initials: ((u.name || "")[0] + (u.surname || "")[0]).toUpperCase(),
       points: u.points || 0,
-      predictions: u.predictions_count || 0,
+      predictions: predictionCounts[u.id] || 0,
     }));
   } catch { return []; }
 }
