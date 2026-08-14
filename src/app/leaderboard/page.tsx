@@ -21,16 +21,19 @@ interface CompletedRace {
   country: string;
 }
 
+interface RoundWinner {
+  username: string;
+  points: number;
+}
+
 export default function LeaderboardPage() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
   const [completedRaces, setCompletedRaces] = useState<CompletedRace[]>([]);
+  const [roundWinners, setRoundWinners] = useState<Record<string, RoundWinner>>({});
   const [activeTab, setActiveTab] = useState("season");
 
+  // Fetch completed races and round winners on mount
   useEffect(() => {
-    fetch("/api/leaderboard")
-      .then(r => r.json())
-      .then(setLeaderboard)
-      .catch(() => {});
     fetch("/api/races")
       .then(r => r.json())
       .then((races: { id: string; round: number; name: string; country: string; status: string }[]) => {
@@ -39,9 +42,33 @@ export default function LeaderboardPage() {
           .sort((a, b) => b.round - a.round)
           .slice(0, 3);
         setCompletedRaces(done);
+
+        // Fetch round winners for all completed races
+        const allCompleted = races.filter(r => r.status === "completed");
+        if (allCompleted.length > 0) {
+          fetch("/api/leaderboard", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ raceIds: allCompleted.map(r => r.id) }),
+          })
+            .then(r => r.json())
+            .then(setRoundWinners)
+            .catch(() => {});
+        }
       })
       .catch(() => {});
   }, []);
+
+  // Fetch leaderboard data whenever active tab changes
+  useEffect(() => {
+    const url = activeTab === "season"
+      ? "/api/leaderboard"
+      : `/api/leaderboard?raceId=${activeTab}`;
+    fetch(url)
+      .then(r => r.json())
+      .then(setLeaderboard)
+      .catch(() => {});
+  }, [activeTab]);
 
   const top3 = leaderboard.slice(0, 3);
   const podiumOrder = top3.length >= 3 ? [top3[1], top3[0], top3[2]] : top3;
@@ -169,7 +196,14 @@ export default function LeaderboardPage() {
                       <span className="text-sm font-extrabold text-[var(--color-text-secondary)] shrink-0 mt-1">{race.country}</span>
                       <div className="flex-1 min-w-0">
                         <div className="text-[10px] text-[var(--color-text-secondary)] tracking-wider">ROUND {race.round} — {race.name.replace(" Grand Prix", " GP").toUpperCase()}</div>
-                        <div className="text-sm font-extrabold mt-0.5">—</div>
+                        {roundWinners[race.id] ? (
+                          <div className="mt-0.5">
+                            <span className="text-sm font-extrabold text-[var(--color-gold)]">{roundWinners[race.id].username}</span>
+                            <span className="text-[10px] text-[var(--color-text-secondary)] ml-2">{roundWinners[race.id].points} pts</span>
+                          </div>
+                        ) : (
+                          <div className="text-sm font-extrabold mt-0.5 text-[var(--color-text-secondary)]">—</div>
+                        )}
                       </div>
                     </div>
                   </div>
