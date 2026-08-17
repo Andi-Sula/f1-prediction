@@ -35,9 +35,12 @@ export default function QualifyingCountdown({ qualifyingTime, compact }: Qualify
 
   if (compact) {
     return (
-      <div className="flex items-center gap-1 text-[10px] font-bold text-amber-500 mt-1">
-        <Clock size={9} />
-        <span>{timeLeft.days}d {pad(timeLeft.hours)}:{pad(timeLeft.minutes)}:{pad(timeLeft.seconds)}</span>
+      <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 shadow-sm">
+        <Clock size={12} className="text-amber-500" />
+        <span className="text-[11px] font-bold text-amber-600">Qualifying in</span>
+        <span className="font-mono text-[11px] font-extrabold text-[var(--color-text)]">
+          {timeLeft.days}d {pad(timeLeft.hours)}:{pad(timeLeft.minutes)}:{pad(timeLeft.seconds)}
+        </span>
       </div>
     );
   }

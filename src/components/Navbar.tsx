@@ -2,11 +2,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Home,
   Trophy,
   Crosshair,
   User,
   Settings,
+  Gift,
   FlagTriangleRight,
   Menu,
   X,
@@ -17,7 +17,6 @@ import { useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 
 const navItems = [
-  { href: "/", label: "Home", icon: Home },
   { href: "/predictions", label: "Predictions", icon: Crosshair },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/profile", label: "Profile", icon: User },

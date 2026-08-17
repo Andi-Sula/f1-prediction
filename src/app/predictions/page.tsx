@@ -14,12 +14,13 @@ import {
   Clock,
   Tv,
   ArrowRight,
-  Info,
   Lock,
+  Trophy,
 } from "lucide-react";
 import Link from "next/link";
 import CustomSelect from "@/components/CustomSelect";
 import QualifyingCountdown from "@/components/QualifyingCountdown";
+import RaceCalendar from "@/components/RaceCalendar";
 import { supabase } from "@/lib/supabase";
 
 interface Driver {
@@ -59,20 +60,24 @@ export default function PredictionsPage() {
   const [raceStatus, setRaceStatus] = useState<string>("upcoming");
   const [raceId, setRaceId] = useState<string>("");
   const [qualifyingTime, setQualifyingTime] = useState<string | null>(null);
+  const [prizes, setPrizes] = useState<{ position: number; icon_url: string | null; label: string | null }[]>([]);
 
   const qualiLocked = raceStatus !== "upcoming";
   const allLocked = raceStatus !== "upcoming";
 
   useEffect(() => {
+    fetch("/api/prizes").then(r => r.json()).then(setPrizes).catch(() => {});
     fetch("/api/drivers").then(r => r.json()).then(setDrivers).catch(() => {});
-    fetch("/api/races").then(r => r.json()).then((data: Race[]) => {
+    const loadRaces = () => fetch("/api/races").then(r => r.json()).then((data: Race[]) => {
       setRaces(data);
-      // Auto-select the active race or first upcoming
-      const active = data.find(r => ["qualifying", "waiting_race", "racing"].includes(r.status));
+      const active = data.find(r => ["qualifying", "race_day"].includes(r.status));
       const upcoming = data.find(r => r.status === "upcoming");
       const defaultRace = active || upcoming || data[0];
-      if (defaultRace) setSelectedRaceId(defaultRace.id);
+      if (defaultRace && !selectedRaceId) setSelectedRaceId(defaultRace.id);
     }).catch(() => {});
+    loadRaces();
+    const interval = setInterval(loadRaces, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -167,6 +172,47 @@ export default function PredictionsPage() {
         </div>
       </div>
 
+      <Ticks />
+
+      {/* Awards of the Weekend */}
+      <section>
+        <div className="flex items-center gap-2 mb-4">
+          <Trophy size={16} className="text-[var(--color-gold)]" />
+          <h2 className="text-xs font-extrabold tracking-[0.15em] uppercase">Awards of the Weekend</h2>
+        </div>
+        <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-6">
+          <div className="grid grid-cols-3 gap-6">
+            {[1, 2, 3].map((pos) => {
+              const prize = prizes.find(p => p.position === pos);
+              const colors = ["var(--color-gold)", "var(--color-silver)", "var(--color-bronze)"];
+              const titles = ["1st Place", "2nd Place", "3rd Place"];
+              return (
+                <div key={pos} className="flex flex-col items-center gap-2 text-center">
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-extrabold text-sm shadow-md"
+                    style={{ backgroundColor: colors[pos - 1] }}
+                  >
+                    {pos}
+                  </div>
+                  {prize?.icon_url && (
+                    <img src={prize.icon_url} alt={prize.label || ""} className="w-16 h-16 object-contain" />
+                  )}
+                  <div className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-widest">{titles[pos - 1]}</div>
+                  <div className="text-sm font-semibold leading-snug">{prize?.label || "TBA"}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <Ticks />
+
+      {/* Race Calendar */}
+      <RaceCalendar />
+
+      <Ticks />
+
       {/* Race Selector */}
       <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-4">
         <label className="text-[10px] font-extrabold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-2">Select Race</label>
@@ -181,10 +227,7 @@ export default function PredictionsPage() {
         />
       </div>
 
-      {/* Qualifying Countdown */}
-      {raceStatus === "upcoming" && qualifyingTime && (
-        <QualifyingCountdown qualifyingTime={qualifyingTime} />
-      )}
+      <Ticks />
 
       {/* Lock Banner */}
       {allLocked && raceStatus !== "upcoming" && (
@@ -194,8 +237,50 @@ export default function PredictionsPage() {
         </div>
       )}
 
+      {/* Qualifying Predictions */}
+      <div className={qualiLocked ? "opacity-50 pointer-events-none" : ""}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <Card
+        icon={<Timer size={16} className={qualiLocked ? "text-[var(--color-text-secondary)]" : "text-[var(--color-primary)]"} />}
+        title={qualiLocked ? "Qualifying Top 3 — Locked" : "Qualifying Top 3 — Saturday"}
+        subtitle={qualiLocked ? "Qualifying predictions have been locked" : "Predict the qualifying order"}
+      >
+        <div className="space-y-3">
+          <DriverPicker label="P1" badge="1" value={qualiP1} onChange={setQualiP1} drivers={getAvailable([qualiP2, qualiP3])} color="var(--color-gold)" />
+          <DriverPicker label="P2" badge="2" value={qualiP2} onChange={setQualiP2} drivers={getAvailable([qualiP1, qualiP3])} color="var(--color-silver)" />
+          <DriverPicker label="P3" badge="3" value={qualiP3} onChange={setQualiP3} drivers={getAvailable([qualiP1, qualiP2])} color="var(--color-bronze)" />
+        </div>
+      </Card>
+
+      {/* Pole Time */}
+      <Card
+        icon={<Clock size={16} className={qualiLocked ? "text-[var(--color-text-secondary)]" : "text-[var(--color-primary)]"} />}
+        title={qualiLocked ? "Pole Position Time — Locked" : "Pole Position Time"}
+        subtitle={qualiLocked ? "Pole time prediction has been locked" : "Predict the fastest qualifying lap"}
+      >
+        <div className="flex items-center gap-2">
+          <TimeInput placeholder="MM" value={poleMin} onChange={setPoleMin} maxLength={2} />
+          <span className="text-lg font-bold text-[var(--color-text-secondary)]">:</span>
+          <TimeInput placeholder="SS" value={poleSec} onChange={setPoleSec} maxLength={2} />
+          <span className="text-lg font-bold text-[var(--color-text-secondary)]">:</span>
+          <TimeInput placeholder="mmm" value={poleMs} onChange={setPoleMs} maxLength={3} width="w-16" />
+        </div>
+        <div className="flex items-center justify-between mt-3 px-1">
+          <span className="text-xs text-[var(--color-text-secondary)]">Format: 01:25:000</span>
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-[var(--color-text-secondary)]">Last Quali</span>
+            <span className="font-bold font-mono text-[var(--color-text)]">01:22:225</span>
+          </div>
+        </div>
+      </Card>
+      </div>
+      </div>
+
+      <Ticks />
+
       {/* Race Predictions */}
       <div className={allLocked ? "opacity-50 pointer-events-none" : ""}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <Card
         icon={<Crosshair size={16} className="text-[var(--color-primary)]" />}
         title="Podium Finish — Sunday"
@@ -239,44 +324,9 @@ export default function PredictionsPage() {
         </div>
       </Card>
       </div>
-
-      {/* Qualifying Predictions */}
-      <Ticks />
-      <div className={qualiLocked ? "opacity-50 pointer-events-none" : ""}>
-      <Card
-        icon={<Timer size={16} className={qualiLocked ? "text-[var(--color-text-secondary)]" : "text-[var(--color-primary)]"} />}
-        title={qualiLocked ? "Qualifying Top 3 — Locked" : "Qualifying Top 3 — Saturday"}
-        subtitle={qualiLocked ? "Qualifying predictions have been locked" : "Predict the qualifying order"}
-      >
-        <div className="space-y-3">
-          <DriverPicker label="P1" badge="1" value={qualiP1} onChange={setQualiP1} drivers={getAvailable([qualiP2, qualiP3])} color="var(--color-gold)" />
-          <DriverPicker label="P2" badge="2" value={qualiP2} onChange={setQualiP2} drivers={getAvailable([qualiP1, qualiP3])} color="var(--color-silver)" />
-          <DriverPicker label="P3" badge="3" value={qualiP3} onChange={setQualiP3} drivers={getAvailable([qualiP1, qualiP2])} color="var(--color-bronze)" />
-        </div>
-      </Card>
-
-      {/* Pole Time */}
-      <Card
-        icon={<Clock size={16} className={qualiLocked ? "text-[var(--color-text-secondary)]" : "text-[var(--color-primary)]"} />}
-        title={qualiLocked ? "Pole Position Time — Locked" : "Pole Position Time"}
-        subtitle={qualiLocked ? "Pole time prediction has been locked" : "Predict the fastest qualifying lap"}
-      >
-        <div className="flex items-center gap-2">
-          <TimeInput placeholder="MM" value={poleMin} onChange={setPoleMin} maxLength={2} />
-          <span className="text-lg font-bold text-[var(--color-text-secondary)]">:</span>
-          <TimeInput placeholder="SS" value={poleSec} onChange={setPoleSec} maxLength={2} />
-          <span className="text-lg font-bold text-[var(--color-text-secondary)]">:</span>
-          <TimeInput placeholder="mmm" value={poleMs} onChange={setPoleMs} maxLength={3} width="w-16" />
-        </div>
-        <div className="flex items-center justify-between mt-3 px-1">
-          <span className="text-xs text-[var(--color-text-secondary)]">Format: 01:25:000</span>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-[var(--color-text-secondary)]">Last Quali</span>
-            <span className="font-bold font-mono text-[var(--color-text)]">01:22:225</span>
-          </div>
-        </div>
-      </Card>
       </div>
+
+      <Ticks />
 
       {/* Boost Promotions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -332,94 +382,6 @@ export default function PredictionsPage() {
         {!allLocked && <p className="text-xs text-[var(--color-text-secondary)] text-center mt-2">Your predictions are auto-submitted and can be changed anytime before the deadline.</p>}
       </div>
 
-      {/* Scoring Reference */}
-      <Card
-        icon={<Info size={16} className="text-[var(--color-primary)]" />}
-        title="Scoring Rules"
-        subtitle="Max 129 base points per race weekend"
-      >
-        <div className="space-y-4">
-          {/* Qualifying */}
-          <div>
-            <div className="text-[10px] font-extrabold text-[var(--color-text-secondary)] uppercase tracking-wider mb-2">Qualifying Top 3 — 24 pts max</div>
-            <div className="grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">P1</div>
-                <div className="text-[var(--color-text-secondary)]">10 exact / 5 partial</div>
-              </div>
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">P2</div>
-                <div className="text-[var(--color-text-secondary)]">8 exact / 4 partial</div>
-              </div>
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">P3</div>
-                <div className="text-[var(--color-text-secondary)]">6 exact / 3 partial</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Pole Time */}
-          <div>
-            <div className="text-[10px] font-extrabold text-[var(--color-text-secondary)] uppercase tracking-wider mb-2">Pole Time — 27 pts max</div>
-            <div className="grid grid-cols-4 gap-2 text-center text-xs">
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">MM:SS</div>
-                <div className="text-[var(--color-text-secondary)]">2 pts</div>
-              </div>
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">.X</div>
-                <div className="text-[var(--color-text-secondary)]">+5 (7)</div>
-              </div>
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">.XX</div>
-                <div className="text-[var(--color-text-secondary)]">+5 (12)</div>
-              </div>
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">.XXX</div>
-                <div className="text-[var(--color-text-secondary)]">+15 (27)</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Race */}
-          <div>
-            <div className="text-[10px] font-extrabold text-[var(--color-text-secondary)] uppercase tracking-wider mb-2">Race Podium — 58 pts max</div>
-            <div className="grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">P1</div>
-                <div className="text-[var(--color-text-secondary)]">25 exact / 10 partial</div>
-              </div>
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">P2</div>
-                <div className="text-[var(--color-text-secondary)]">18 exact / 8 partial</div>
-              </div>
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">P3</div>
-                <div className="text-[var(--color-text-secondary)]">15 exact / 6 partial</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Conditions */}
-          <div>
-            <div className="text-[10px] font-extrabold text-[var(--color-text-secondary)] uppercase tracking-wider mb-2">Conditions — 20 pts max</div>
-            <div className="grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">Rain</div>
-                <div className="text-[var(--color-text-secondary)]">5 pts</div>
-              </div>
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">Safety Car</div>
-                <div className="text-[var(--color-text-secondary)]">5 pts</div>
-              </div>
-              <div className="bg-[var(--color-background)] rounded-lg p-2">
-                <div className="font-extrabold">DNFs</div>
-                <div className="text-[var(--color-text-secondary)]">10 pts (exact)</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Card>
     </div>
   );
 }

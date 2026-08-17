@@ -12,6 +12,7 @@ import {
   ToggleLeft,
   ToggleRight,
   Search,
+  Trash2,
 } from "lucide-react";
 import { adminFetch } from "@/lib/admin-api";
 
@@ -124,6 +125,16 @@ export default function DriversPage() {
       setDrivers(drivers.map(d => d.id === driver.id ? { ...d, active: !d.active } : d));
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to toggle status");
+    }
+  };
+
+  const handleDelete = async (driver: Driver) => {
+    if (!confirm(`Delete ${driver.name}? This cannot be undone.`)) return;
+    try {
+      await adminFetch(`/api/admin/drivers/${driver.id}`, { method: "DELETE" });
+      setDrivers(drivers.filter(d => d.id !== driver.id));
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Delete failed");
     }
   };
 
@@ -310,6 +321,9 @@ export default function DriversPage() {
                     </button>
                     <button onClick={() => toggleActive(driver)} className="w-8 h-8 rounded-lg hover:bg-[var(--color-primary)]/10 flex items-center justify-center transition-colors" title={driver.active ? "Deactivate" : "Activate"}>
                       {driver.active ? <ToggleRight size={16} className="text-[var(--color-green)]" /> : <ToggleLeft size={16} className="text-[var(--color-text-secondary)]" />}
+                    </button>
+                    <button onClick={() => handleDelete(driver)} className="w-8 h-8 rounded-lg hover:bg-red-500/10 flex items-center justify-center transition-colors" title="Delete">
+                      <Trash2 size={14} className="text-[var(--color-text-secondary)] hover:text-red-400" />
                     </button>
                   </div>
                 </td>

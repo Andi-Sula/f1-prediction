@@ -49,15 +49,13 @@ export async function DELETE(
   const { id } = await params;
 
   try {
-    const { data, error: dbError } = await supabaseAdmin
+    const { error: dbError } = await supabaseAdmin
       .from("drivers")
-      .update({ active: false, updated_at: new Date().toISOString() })
-      .eq("id", id)
-      .select()
-      .single();
+      .delete()
+      .eq("id", id);
     if (dbError) throw dbError;
-    return NextResponse.json({ success: true, driver: data });
+    return NextResponse.json({ success: true });
   } catch {
-    return NextResponse.json({ success: false, message: "Failed to deactivate driver" }, { status: 500 });
+    return NextResponse.json({ success: false, message: "Failed to delete driver" }, { status: 500 });
   }
 }

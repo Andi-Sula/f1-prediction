@@ -5,8 +5,6 @@ import {
   Star,
   CheckCircle,
   CheckCircle2,
-  Moon,
-  Sun,
   Bell,
   Globe,
   HelpCircle,
@@ -17,8 +15,9 @@ import {
   Zap,
   Tv,
   Loader2,
+  Pencil,
+  Save,
 } from "lucide-react";
-import { useTheme } from "@/components/ThemeProvider";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/lib/supabase";
 
@@ -27,6 +26,9 @@ interface ProfileData {
   email: string;
   name: string;
   surname: string;
+  telephone: string;
+  birthday: string;
+  createdAt: string;
   points: number;
   rank: number;
   predictionsCount: number;
@@ -34,7 +36,6 @@ interface ProfileData {
 }
 
 export default function ProfilePage() {
-  const { isDark, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const [notifications, setNotifications] = useState(true);
   const [raiffeisenCode, setRaiffeisenCode] = useState("");
@@ -42,6 +43,10 @@ export default function ProfilePage() {
   const [digitalbId, setDigitalbId] = useState("");
   const [digitalbLinked, setDigitalbLinked] = useState(false);
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ name: "", surname: "", username: "", email: "", telephone: "", birthday: "" });
+  const [saving, setSaving] = useState(false);
+  const [editMsg, setEditMsg] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -60,6 +65,42 @@ export default function ProfilePage() {
     ? ((profile.name?.[0] || "") + (profile.surname?.[0] || "")).toUpperCase() || profile.username[0]?.toUpperCase()
     : "U";
 
+  const openEdit = () => {
+    if (!profile) return;
+    setEditForm({
+      name: profile.name || "",
+      surname: profile.surname || "",
+      username: profile.username || "",
+      email: profile.email || "",
+      telephone: profile.telephone || "",
+      birthday: profile.birthday || "",
+    });
+    setEditMsg("");
+    setEditing(true);
+  };
+
+  const saveProfile = async () => {
+    setSaving(true);
+    setEditMsg("");
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+      const res = await fetch("/api/auth/profile", {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        body: JSON.stringify(editForm),
+      });
+      const json = await res.json();
+      if (!res.ok) { setEditMsg(json.message || "Failed to save"); return; }
+      setProfile({ ...profile!, ...editForm });
+      setEditing(false);
+    } catch {
+      setEditMsg("Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6 min-h-[calc(100vh-4rem)] pb-24 md:pb-10">
       {/* Profile Header */}
@@ -69,9 +110,73 @@ export default function ProfilePage() {
         </div>
         <div>
           <h1 className="text-xl font-extrabold">{profile ? `${profile.name} ${profile.surname}` : "Loading..."}</h1>
-          <p className="text-sm text-[var(--color-text-secondary)] mt-0.5">{profile?.email || ""}</p>
+          <p className="text-sm text-[var(--color-text-secondary)] mt-0.5">@{profile?.username || ""}</p>
+          <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">{profile?.email || ""}</p>
+          {profile?.createdAt && (
+            <p className="text-xs text-[var(--color-text-secondary)] mt-1">Joined {new Date(profile.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })}</p>
+          )}
         </div>
+        {!editing && (
+          <button onClick={openEdit} className="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--color-primary)] hover:underline">
+            <Pencil size={12} /> Edit Profile
+          </button>
+        )}
       </div>
+
+      {/* Edit Profile */}
+      {editing && (
+        <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-5 space-y-4">
+          <h3 className="font-bold text-sm flex items-center gap-2">
+            <Pencil size={14} className="text-[var(--color-primary)]" /> Edit Profile
+          </h3>
+          {editMsg && (
+            <div className="text-xs font-medium text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{editMsg}</div>
+          )}
+          <div>
+            <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Username</label>
+            <input value={editForm.username} onChange={e => setEditForm({ ...editForm, username: e.target.value })}
+              className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-sm focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">First Name</label>
+              <input value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-sm focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Last Name</label>
+              <input value={editForm.surname} onChange={e => setEditForm({ ...editForm, surname: e.target.value })}
+                className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-sm focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+            </div>
+          </div>
+          <div>
+            <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Email</label>
+            <input type="email" value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })}
+              className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-sm focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Telephone</label>
+              <input type="tel" value={editForm.telephone} onChange={e => setEditForm({ ...editForm, telephone: e.target.value })}
+                className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-sm focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Birthday</label>
+              <input type="date" value={editForm.birthday} onChange={e => setEditForm({ ...editForm, birthday: e.target.value })}
+                className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-sm focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button onClick={() => setEditing(false)} className="flex-1 py-2.5 border border-[var(--color-border)] rounded-xl text-sm font-bold hover:bg-[var(--color-background)] transition-colors">
+              Cancel
+            </button>
+            <button onClick={saveProfile} disabled={saving} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-[var(--color-primary)] text-white rounded-xl text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50">
+              {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+              {saving ? "Saving..." : "Save"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-5">
@@ -172,18 +277,6 @@ export default function ProfilePage() {
           Settings
         </h3>
         <div className="divide-y divide-[var(--color-border)]">
-          <div className="flex items-center justify-between py-3.5">
-            <div className="flex items-center gap-3">
-              {isDark ? <Moon size={18} className="text-[var(--color-primary)]" /> : <Sun size={18} className="text-[var(--color-primary)]" />}
-              <span className="text-sm font-semibold">Dark Mode</span>
-            </div>
-            <button
-              onClick={toggleTheme}
-              className={`w-12 h-7 rounded-full transition-colors relative ${isDark ? "bg-[var(--color-primary)]" : "bg-[var(--color-border)]"}`}
-            >
-              <div className={`w-5 h-5 rounded-full bg-white absolute top-1 transition-all duration-200 ${isDark ? "left-6" : "left-1"}`} />
-            </button>
-          </div>
           <div className="flex items-center justify-between py-3.5">
             <div className="flex items-center gap-3">
               <Bell size={18} className="text-[var(--color-primary)]" />

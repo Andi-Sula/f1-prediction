@@ -9,6 +9,8 @@ import {
   Check,
   CalendarDays,
   Loader2,
+  ToggleLeft,
+  ToggleRight,
 } from "lucide-react";
 import { adminFetch } from "@/lib/admin-api";
 import CustomSelect from "@/components/CustomSelect";
@@ -21,6 +23,7 @@ interface Race {
   qualifying_time: string | null;
   status: string;
   season: number;
+  visible: boolean;
 }
 
 export default function RacesPage() {
@@ -120,8 +123,20 @@ export default function RacesPage() {
     }
   };
 
+  const toggleVisibility = async (race: Race) => {
+    try {
+      await adminFetch(`/api/admin/races/${race.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ visible: !race.visible }),
+      });
+      setRaces(races.map(r => r.id === race.id ? { ...r, visible: !r.visible } : r));
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Toggle failed");
+    }
+  };
+
   const statusStyle = (status: string) =>
-    status === "active" || status === "qualifying"
+    status === "active" || status === "qualifying" || status === "race_day"
       ? "bg-[var(--color-green)]/10 text-[var(--color-green)] border border-[var(--color-green)]/20"
       : status === "completed"
       ? "bg-[var(--color-text-secondary)]/10 text-[var(--color-text-secondary)] border border-[var(--color-text-secondary)]/20"
@@ -200,8 +215,7 @@ export default function RacesPage() {
                 options={[
                   { value: "upcoming", label: "Upcoming" },
                   { value: "qualifying", label: "Qualifying" },
-                  { value: "waiting_race", label: "Waiting Race" },
-                  { value: "racing", label: "Racing" },
+                  { value: "race_day", label: "Race Day" },
                   { value: "completed", label: "Completed" },
                   { value: "cancelled", label: "Cancelled" },
                 ]}
@@ -234,7 +248,7 @@ export default function RacesPage() {
           <tbody>
             {races.map((race) => {
               return (
-              <tr key={race.id} className="border-b border-[var(--color-border)] last:border-0 hover:bg-white/[0.02] transition-colors">
+              <tr key={race.id} className={`border-b border-[var(--color-border)] last:border-0 hover:bg-white/[0.02] transition-colors ${!race.visible ? 'opacity-50' : ''}`}>
                 <td className="px-5 py-3.5">
                   <div className="flex items-center gap-3">
                     <FlagTriangleRight size={14} className="text-[var(--color-primary)] shrink-0" />
@@ -260,6 +274,9 @@ export default function RacesPage() {
                 </td>
                 <td className="px-5 py-3.5 text-right">
                   <div className="flex items-center justify-end gap-1">
+                    <button onClick={() => toggleVisibility(race)} className="w-8 h-8 rounded-lg hover:bg-[var(--color-primary)]/10 flex items-center justify-center transition-colors" title={race.visible ? "Deactivate" : "Activate"}>
+                      {race.visible ? <ToggleRight size={16} className="text-[var(--color-green)]" /> : <ToggleLeft size={16} className="text-[var(--color-text-secondary)]" />}
+                    </button>
                     <button onClick={() => openEdit(race)} className="w-8 h-8 rounded-lg hover:bg-[var(--color-primary)]/10 flex items-center justify-center transition-colors" title="Edit">
                       <Pencil size={14} className="text-[var(--color-primary)]" />
                     </button>

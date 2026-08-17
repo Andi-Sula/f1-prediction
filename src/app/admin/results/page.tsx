@@ -68,11 +68,16 @@ export default function ResultsPage() {
       if (res.ok) {
         const json = await res.json();
         if (json.success && json.races) {
-          setRaces(json.races);
-          // Auto-select the most recent completed race
-          const completed = json.races.filter((r: Race) => r.status === "completed");
-          if (completed.length > 0) {
-            setSelectedRace(completed[completed.length - 1].id);
+          const visibleRaces = json.races.filter((r: Race & { visible?: boolean }) => r.visible !== false);
+          setRaces(visibleRaces);
+          const active = visibleRaces.find((r: Race) =>
+            ["active", "qualifying", "race_day"].includes(r.status)
+          );
+          const upcoming = visibleRaces.find((r: Race) => r.status === "upcoming");
+          if (active) {
+            setSelectedRace(active.id);
+          } else if (upcoming) {
+            setSelectedRace(upcoming.id);
           } else if (json.races.length > 0) {
             setSelectedRace(json.races[json.races.length - 1].id);
           }

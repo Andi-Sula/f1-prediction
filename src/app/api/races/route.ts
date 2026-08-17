@@ -7,6 +7,7 @@ async function autoTransitionRaces() {
     .from("races")
     .update({ status: "qualifying", locked: true, updated_at: now })
     .eq("status", "upcoming")
+    .eq("visible", true)
     .not("qualifying_time", "is", null)
     .lte("qualifying_time", now);
 }
@@ -17,8 +18,9 @@ export async function GET() {
 
     const { data, error } = await supabaseAdmin
       .from("races")
-      .select("id, round, name, circuit, country, date, race_time, qualifying_time, status")
-      .order("round", { ascending: true });
+      .select("id, name, date, qualifying_time, status")
+      .eq("visible", true)
+      .order("date", { ascending: true });
 
     if (error) throw error;
     return NextResponse.json(data || []);
