@@ -11,7 +11,12 @@ interface Race {
   status: "completed" | "active" | "upcoming" | "qualifying" | "waiting_race" | "racing" | "race_day" | "cancelled";
 }
 
-export default function RaceCalendar() {
+interface RaceCalendarProps {
+  onSelectRace?: (raceId: string) => void;
+  selectedRaceId?: string;
+}
+
+export default function RaceCalendar({ onSelectRace, selectedRaceId }: RaceCalendarProps = {}) {
   const [races, setRaces] = useState<Race[]>([]);
   const [selected, setSelected] = useState<Race | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -89,19 +94,21 @@ export default function RaceCalendar() {
             return (
               <button
                 key={race.id}
-                onClick={() => setSelected(race)}
-                className={`shrink-0 w-[120px] rounded-xl p-3 text-left transition-all duration-200 border ${
-                  isLive
-                    ? "bg-[var(--color-primary)]/5 border-[var(--color-primary)] shadow-sm"
+                onClick={() => onSelectRace ? onSelectRace(race.id) : setSelected(race)}
+                className={`shrink-0 w-[120px] rounded-xl p-3 text-left transition-all duration-200 border-2 ${
+                  selectedRaceId === race.id
+                    ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5 shadow-md"
+                    : isLive
+                    ? "border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 shadow-sm"
                     : isRaceWeek
-                    ? "bg-[var(--color-primary)]/5 border-[var(--color-primary)] shadow-sm"
+                    ? "border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 shadow-sm"
                     : isNext
-                    ? "bg-amber-50 border-amber-300 shadow-sm"
+                    ? "border-amber-300 bg-amber-50 shadow-sm"
                     : isDone
-                    ? "bg-[var(--color-background)] border-[var(--color-border)] opacity-70"
+                    ? "border-transparent bg-[var(--color-background)] opacity-70"
                     : isCancelled
-                    ? "bg-[var(--color-background)] border-[var(--color-border)] opacity-40"
-                    : "bg-white border-[var(--color-border)] hover:border-[var(--color-text-secondary)]/40"
+                    ? "border-transparent bg-[var(--color-background)] opacity-40"
+                    : "border-transparent bg-white hover:border-[var(--color-border)]"
                 }`}
               >
                 {/* Flag + Round */}

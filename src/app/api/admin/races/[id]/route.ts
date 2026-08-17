@@ -14,7 +14,7 @@ export async function PUT(
   const { id } = await params;
 
   try {
-    const { name, date, race_time, qualifying_time, status, visible } = await request.json();
+    const { name, date, race_time, qualifying_time, status, visible, best_lap } = await request.json();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updates: Record<string, any> = { updated_at: new Date().toISOString() };
     if (name !== undefined) updates.name = name;
@@ -23,6 +23,7 @@ export async function PUT(
     if (qualifying_time !== undefined) updates.qualifying_time = qualifying_time;
     if (status !== undefined) updates.status = status;
     if (visible !== undefined) updates.visible = visible;
+    if (best_lap !== undefined) updates.best_lap = best_lap || null;
 
     // Only one event can be in an active status at a time
     if (status && ["qualifying", "waiting_race", "racing"].includes(status)) {

@@ -23,6 +23,7 @@ export interface Race {
   name: string;
   date: string;
   qualifyingTime: string | null;
+  bestLap: string | null;
   status: string;
   season: number;
   locked: boolean;
@@ -72,6 +73,7 @@ function mapRace(row: any): Race | null {
     name: row.name,
     date: row.date,
     qualifyingTime: row.qualifying_time,
+    bestLap: row.best_lap || null,
     status: row.status,
     season: row.season,
     locked: row.locked,

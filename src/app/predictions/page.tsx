@@ -60,6 +60,7 @@ export default function PredictionsPage() {
   const [raceStatus, setRaceStatus] = useState<string>("upcoming");
   const [raceId, setRaceId] = useState<string>("");
   const [qualifyingTime, setQualifyingTime] = useState<string | null>(null);
+  const [bestLap, setBestLap] = useState<string | null>(null);
   const [prizes, setPrizes] = useState<{ position: number; icon_url: string | null; label: string | null }[]>([]);
 
   const qualiLocked = raceStatus !== "upcoming";
@@ -97,6 +98,7 @@ export default function PredictionsPage() {
         setRaceName(data.raceName || "");
         setRaceStatus(data.raceStatus || "upcoming");
         setQualifyingTime(data.qualifyingTime || null);
+        setBestLap(data.bestLap || null);
         const p = data.prediction;
         if (p) {
           if (p.race) { setRaceP1(p.race.p1 || ""); setRaceP2(p.race.p2 || ""); setRaceP3(p.race.p3 || ""); }
@@ -209,25 +211,12 @@ export default function PredictionsPage() {
       <Ticks />
 
       {/* Race Calendar */}
-      <RaceCalendar />
+      <RaceCalendar onSelectRace={setSelectedRaceId} selectedRaceId={selectedRaceId} />
 
       <Ticks />
 
-      {/* Race Selector */}
-      <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-4">
-        <label className="text-[10px] font-extrabold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-2">Select Race</label>
-        <CustomSelect
-          value={selectedRaceId}
-          onChange={setSelectedRaceId}
-          options={races.map(r => {
-            const formatted = r.qualifying_time ? new Date(r.qualifying_time).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
-            return { value: r.id, label: `${r.name}${formatted ? ` — ${formatted}` : ""} (${r.status})` };
-          })}
-          placeholder="Select race"
-        />
-      </div>
-
-      <Ticks />
+      {/* Selected race label */}
+      <h2 className="text-lg font-extrabold">Predictions for {raceName || "..."}</h2>
 
       {/* Lock Banner */}
       {allLocked && raceStatus !== "upcoming" && (
@@ -267,10 +256,12 @@ export default function PredictionsPage() {
         </div>
         <div className="flex items-center justify-between mt-3 px-1">
           <span className="text-xs text-[var(--color-text-secondary)]">Format: 01:25:000</span>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-[var(--color-text-secondary)]">Last Quali</span>
-            <span className="font-bold font-mono text-[var(--color-text)]">01:22:225</span>
-          </div>
+          {bestLap && (
+            <div className="flex items-center gap-2 text-xs">
+              <span className="text-[var(--color-text-secondary)]">Last Quali Best Lap:</span>
+              <span className="font-bold font-mono text-[var(--color-text)]">{bestLap}</span>
+            </div>
+          )}
         </div>
       </Card>
       </div>

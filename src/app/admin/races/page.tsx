@@ -21,6 +21,7 @@ interface Race {
   date: string;
   race_time: string | null;
   qualifying_time: string | null;
+  best_lap: string | null;
   status: string;
   season: number;
   visible: boolean;
@@ -31,7 +32,7 @@ export default function RacesPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editRace, setEditRace] = useState<Race | null>(null);
-  const [form, setForm] = useState({ name: "", date: "", qualifying_time: "", status: "upcoming" });
+  const [form, setForm] = useState({ name: "", date: "", qualifying_time: "", status: "upcoming", best_lap: "" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [formError, setFormError] = useState("");
@@ -57,7 +58,7 @@ export default function RacesPage() {
   const openAdd = () => {
     setEditRace(null);
     setFormError("");
-    setForm({ name: "", date: "", qualifying_time: "", status: "upcoming" });
+    setForm({ name: "", date: "", qualifying_time: "", status: "upcoming", best_lap: "" });
     setShowForm(true);
   };
 
@@ -77,6 +78,7 @@ export default function RacesPage() {
       date: race.date,
       qualifying_time: toLocalInput(race.qualifying_time),
       status: race.status,
+      best_lap: race.best_lap || "",
     });
     setShowForm(true);
   };
@@ -98,6 +100,7 @@ export default function RacesPage() {
         date: form.date,
         qualifying_time: toISO(form.qualifying_time),
         status: form.status,
+        best_lap: form.best_lap || null,
       };
       if (editRace) {
         await adminFetch(`/api/admin/races/${editRace.id}`, { method: "PUT", body: JSON.stringify(body) });
@@ -220,6 +223,13 @@ export default function RacesPage() {
                   { value: "cancelled", label: "Cancelled" },
                 ]}
               />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">
+                Best Lap Time (M:SS.mmm)
+              </label>
+              <input type="text" placeholder="1:23.456" value={form.best_lap} onChange={e => setForm({ ...form, best_lap: e.target.value })}
+                className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-sm text-[var(--color-text)] font-mono placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
             </div>
             <div className="flex gap-3 pt-2">
               <button onClick={() => setShowForm(false)} className="flex-1 flex items-center justify-center gap-2 py-3 border border-[var(--color-border)] rounded-xl text-sm font-bold hover:bg-white/[0.02] transition-all">
