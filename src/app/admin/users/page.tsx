@@ -411,7 +411,7 @@ function DetailItem({ icon, label, value }: { icon: React.ReactNode; label: stri
       <div className="flex items-center gap-1.5 text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">
         {icon} {label}
       </div>
-      <div className="text-sm font-semibold truncate">{value}</div>
+      <div className="text-sm font-semibold break-words">{value}</div>
     </div>
   );
 }
