@@ -267,7 +267,7 @@ export default function ResultsPage() {
           <TimeInput placeholder="MM" value={poleMin} onChange={setPoleMin} maxLength={2} />
           <span className="text-lg font-bold text-[var(--color-text-secondary)]">:</span>
           <TimeInput placeholder="SS" value={poleSec} onChange={setPoleSec} maxLength={2} />
-          <span className="text-lg font-bold text-[var(--color-text-secondary)]">:</span>
+          <span className="text-lg font-bold text-[var(--color-text-secondary)]">.</span>
           <TimeInput placeholder="mmm" value={poleMs} onChange={setPoleMs} maxLength={3} width="w-16" />
         </div>
       </Section>
