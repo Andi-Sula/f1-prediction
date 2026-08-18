@@ -351,7 +351,7 @@ export default function PredictionsPage() {
                 <h3 className="font-bold text-sm text-white">DigitAlb 2× Points</h3>
                 <span className="bg-white text-[var(--color-primary)] text-[10px] font-extrabold px-2 py-0.5 rounded-md">2×</span>
               </div>
-              <p className="text-xs text-white/80">Add your subscriber ID in your profile to double your points.</p>
+              <p className="text-xs text-white/80">Add your subscriber ID in your profile to double your points — usable in 3 races per season.</p>
               <div className="flex items-center gap-1 mt-2 text-xs font-bold text-white/80 group-hover:text-white transition-colors">
                 Go to Profile <ArrowRight size={12} />
               </div>
