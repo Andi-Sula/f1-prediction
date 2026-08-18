@@ -8,6 +8,9 @@ interface User {
   email: string;
   name: string;
   surname: string;
+  address: string;
+  telephone: string;
+  birthday: string;
   role: string;
   status: string;
   points: number;
@@ -19,7 +22,10 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  profileIncomplete: boolean;
+  refreshProfile: () => Promise<void>;
   login: (email: string, password: string) => Promise<{ success: boolean; message?: string; requiresVerification?: boolean; email?: string }>;
+  loginWithGoogle: () => Promise<void>;
   register: (data: RegisterData) => Promise<{ success: boolean; message?: string; requiresVerification?: boolean; email?: string }>;
   verifyOTP: (email: string, otp: string) => Promise<{ success: boolean; message?: string }>;
   resendOTP: (email: string) => Promise<{ success: boolean; message?: string }>;
@@ -131,6 +137,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: false, message: "Network error. Please try again." };
     }
   }, [fetchProfile]);
+
+  const loginWithGoogle = useCallback(async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+  }, []);
 
   const register = useCallback(async (formData: RegisterData) => {
     try {
@@ -255,12 +270,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  const profileIncomplete = !!(user && user.authProvider !== "email" && user.authProvider !== "supabase" && !user.address);
+
   return (
     <AuthContext.Provider
       value={{
         user,
         loading,
+        profileIncomplete,
+        refreshProfile: fetchProfile,
         login,
+        loginWithGoogle,
         register,
         verifyOTP,
         resendOTP,

@@ -10,7 +10,33 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const user = await getUserById(authUser.id);
+    let user = await getUserById(authUser.id);
+
+    // Auto-create profile for OAuth users missing from users table
+    if (!user) {
+      const { data: { user: authUserData } } = await supabaseAdmin.auth.getUser(
+        request.headers.get("authorization")!.slice(7)
+      );
+      if (authUserData?.app_metadata?.provider && authUserData.app_metadata.provider !== "email") {
+        const meta = authUserData.user_metadata || {};
+        const fullName = (meta.full_name || meta.name || "").split(" ");
+        const emailPrefix = (authUserData.email || "").split("@")[0];
+        // Append random suffix to avoid username conflicts
+        const username = emailPrefix + "_" + Math.random().toString(36).slice(2, 6);
+        await supabaseAdmin.from("users").insert({
+          id: authUserData.id,
+          email: authUserData.email,
+          name: fullName[0] || "",
+          surname: fullName.slice(1).join(" ") || "",
+          username,
+          address: "",
+          auth_provider: authUserData.app_metadata.provider,
+          status: "active",
+        });
+        user = await getUserById(authUser.id);
+      }
+    }
+
     if (!user) {
       return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
     }
