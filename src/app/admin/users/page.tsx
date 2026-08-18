@@ -21,6 +21,7 @@ import {
   Eye,
   Globe,
   Loader2,
+  Download,
 } from "lucide-react";
 import { adminFetch } from "@/lib/admin-api";
 import CustomSelect from "@/components/CustomSelect";
@@ -123,6 +124,27 @@ export default function UsersPage() {
 
   const adminCount = users.filter(u => u.role === "admin").length;
 
+  const exportUsers = async () => {
+    try {
+      const { supabase } = await import("@/lib/supabase");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+      const res = await fetch("/api/admin/users/export", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `f1_users_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setError("Failed to export users");
+    }
+  };
+
   const authProviderLabel = (provider: string) => {
     switch (provider) {
       case "google": return { label: "Google", color: "text-blue-400" };
@@ -147,6 +169,10 @@ export default function UsersPage() {
           <p className="text-sm text-[var(--color-text-secondary)] mt-1">{users.length} total users</p>
         </div>
         <div className="flex items-center gap-4 text-sm">
+          <button onClick={exportUsers} className="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 shadow-lg shadow-[var(--color-primary)]/20 transition-all">
+            <Download size={16} />
+            Export Emails
+          </button>
           <div className="flex items-center gap-1.5 text-[var(--color-primary)]">
             <ShieldCheck size={14} />
             <span className="font-bold">{adminCount} admin{adminCount !== 1 ? "s" : ""}</span>

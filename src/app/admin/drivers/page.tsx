@@ -7,14 +7,131 @@ import {
   X,
   Check,
   Loader2,
-  Upload,
-  Image as ImageIcon,
   ToggleLeft,
   ToggleRight,
   Search,
   Trash2,
+  ChevronDown,
 } from "lucide-react";
 import { adminFetch } from "@/lib/admin-api";
+
+const COUNTRIES = [
+  { code: "NL", name: "Netherlands" },
+  { code: "GB", name: "United Kingdom" },
+  { code: "ES", name: "Spain" },
+  { code: "MC", name: "Monaco" },
+  { code: "MX", name: "Mexico" },
+  { code: "AU", name: "Australia" },
+  { code: "DE", name: "Germany" },
+  { code: "FR", name: "France" },
+  { code: "FI", name: "Finland" },
+  { code: "CA", name: "Canada" },
+  { code: "TH", name: "Thailand" },
+  { code: "JP", name: "Japan" },
+  { code: "CN", name: "China" },
+  { code: "US", name: "United States" },
+  { code: "DK", name: "Denmark" },
+  { code: "IT", name: "Italy" },
+  { code: "AR", name: "Argentina" },
+  { code: "BR", name: "Brazil" },
+  { code: "NZ", name: "New Zealand" },
+  { code: "AT", name: "Austria" },
+  { code: "BE", name: "Belgium" },
+  { code: "PL", name: "Poland" },
+  { code: "IE", name: "Ireland" },
+];
+
+function FlagImg({ code, size = 24 }: { code: string; size?: number }) {
+  return (
+    <img
+      src={`https://flagcdn.com/w80/${code.toLowerCase()}.png`}
+      alt={code}
+      width={size}
+      height={Math.round(size * 0.75)}
+      className="inline-block rounded-sm object-cover"
+      style={{ width: size, height: Math.round(size * 0.75) }}
+    />
+  );
+}
+
+function CountrySelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [filter, setFilter] = useState("");
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const selected = COUNTRIES.find(c => c.code === value);
+  const filtered = COUNTRIES.filter(c => c.name.toLowerCase().includes(filter.toLowerCase()));
+
+  return (
+    <div>
+      <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Origin</label>
+      <div ref={ref} className="relative">
+        <button
+          type="button"
+          onClick={() => { setOpen(!open); setFilter(""); }}
+          className="w-full flex items-center justify-between bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-sm text-left cursor-pointer hover:border-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors"
+        >
+          <span className={selected ? "text-[var(--color-text)] flex items-center gap-2" : "text-[var(--color-text-secondary)]"}>
+            {selected ? <><FlagImg code={selected.code} size={20} /> {selected.name}</> : "Select country..."}
+          </span>
+          <ChevronDown size={16} className={`text-[var(--color-text-secondary)] transition-transform ${open ? "rotate-180" : ""}`} />
+        </button>
+
+        {open && (
+          <div className="absolute z-50 mt-1.5 w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl shadow-xl shadow-black/20 overflow-hidden">
+            <div className="p-2 border-b border-[var(--color-border)]">
+              <input
+                autoFocus
+                placeholder="Search country..."
+                value={filter}
+                onChange={e => setFilter(e.target.value)}
+                className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none"
+              />
+            </div>
+            <div className="max-h-52 overflow-y-auto py-1">
+              <button
+                type="button"
+                onClick={() => { onChange(""); setOpen(false); }}
+                className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm text-left transition-colors ${
+                  !value ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)] font-semibold" : "text-[var(--color-text-secondary)] hover:bg-[var(--color-border)]/40"
+                }`}
+              >
+                No origin
+              </button>
+              {filtered.map(c => {
+                const active = c.code === value;
+                return (
+                  <button
+                    key={c.code}
+                    type="button"
+                    onClick={() => { onChange(c.code); setOpen(false); }}
+                    className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm text-left transition-colors ${
+                      active
+                        ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)] font-semibold"
+                        : "text-[var(--color-text)] hover:bg-[var(--color-border)]/40"
+                    }`}
+                  >
+                    <FlagImg code={c.code} size={20} />
+                    <span className="flex-1 truncate">{c.name}</span>
+                    {active && <Check size={14} className="text-[var(--color-primary)] shrink-0" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 interface Driver {
   id: string;
@@ -23,7 +140,7 @@ interface Driver {
   team: string;
   number: number;
   active: boolean;
-  image_url: string | null;
+  origin: string | null;
   created_at: string;
 }
 
@@ -32,12 +149,10 @@ export default function DriversPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editDriver, setEditDriver] = useState<Driver | null>(null);
-  const [form, setForm] = useState({ code: "", name: "", team: "", number: "", image_url: "" });
+  const [form, setForm] = useState({ code: "", name: "", team: "", number: "", origin: "" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchDrivers = useCallback(async () => {
     try {
@@ -54,41 +169,14 @@ export default function DriversPage() {
 
   const openAdd = () => {
     setEditDriver(null);
-    setForm({ code: "", name: "", team: "", number: "", image_url: "" });
-    setImagePreview(null);
+    setForm({ code: "", name: "", team: "", number: "", origin: "" });
     setShowForm(true);
   };
 
   const openEdit = (driver: Driver) => {
     setEditDriver(driver);
-    setForm({ code: driver.code || "", name: driver.name, team: driver.team, number: String(driver.number), image_url: driver.image_url || "" });
-    setImagePreview(driver.image_url || null);
+    setForm({ code: driver.code || "", name: driver.name, team: driver.team, number: String(driver.number), origin: driver.origin || "" });
     setShowForm(true);
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate format
-    const validTypes = ["image/jpeg", "image/png", "image/webp", "image/svg+xml"];
-    if (!validTypes.includes(file.type)) {
-      setError("Please upload a JPEG, PNG, WebP, or SVG image");
-      return;
-    }
-    // Validate size (max 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      setError("Image must be smaller than 2MB");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const dataUrl = ev.target?.result as string;
-      setImagePreview(dataUrl);
-      setForm(f => ({ ...f, image_url: dataUrl }));
-    };
-    reader.readAsDataURL(file);
   };
 
   const handleSave = async () => {
@@ -100,7 +188,7 @@ export default function DriversPage() {
         name: form.name,
         team: form.team,
         number: parseInt(form.number, 10),
-        image_url: form.image_url || null,
+        origin: form.origin || null,
       };
       if (editDriver) {
         await adminFetch(`/api/admin/drivers/${editDriver.id}`, { method: "PUT", body: JSON.stringify(body) });
@@ -221,37 +309,11 @@ export default function DriversPage() {
               </div>
             </div>
 
-            {/* Photo upload */}
-            <div>
-              <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Driver Photo</label>
-              <div className="flex items-center gap-4">
-                {imagePreview ? (
-                  <div className="w-16 h-16 rounded-xl border border-[var(--color-border)] overflow-hidden bg-[var(--color-background)] shrink-0">
-                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                  </div>
-                ) : (
-                  <div className="w-16 h-16 rounded-xl border border-dashed border-[var(--color-border)] flex items-center justify-center bg-[var(--color-background)] shrink-0">
-                    <ImageIcon size={20} className="text-[var(--color-text-secondary)]" />
-                  </div>
-                )}
-                <div className="flex-1">
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center gap-2 px-4 py-2.5 border border-[var(--color-border)] rounded-xl text-sm font-semibold hover:bg-white/[0.02] transition-all"
-                  >
-                    <Upload size={14} />
-                    Upload Photo
-                  </button>
-                  <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/svg+xml" onChange={handleFileChange} className="hidden" />
-                  <p className="text-[10px] text-[var(--color-text-secondary)] mt-1">JPEG, PNG, WebP, or SVG. Max 2MB.</p>
-                </div>
-              </div>
-              {/* Or paste URL */}
-              <input placeholder="Or paste image URL..." value={form.image_url.startsWith("data:") ? "" : form.image_url}
-                onChange={e => { setForm({ ...form, image_url: e.target.value }); setImagePreview(e.target.value || null); }}
-                className="w-full mt-2 bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-xs text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
-            </div>
+            {/* Origin / Country */}
+            <CountrySelect
+              value={form.origin}
+              onChange={(v) => setForm({ ...form, origin: v })}
+            />
 
             <div className="flex gap-3 pt-2">
               <button onClick={() => setShowForm(false)} className="flex-1 flex items-center justify-center gap-2 py-3 border border-[var(--color-border)] rounded-xl text-sm font-bold hover:bg-white/[0.02] transition-all">
@@ -274,8 +336,8 @@ export default function DriversPage() {
               <th className="text-left px-5 py-3.5 text-[10px] font-extrabold text-[var(--color-text-secondary)] uppercase tracking-wider">Driver</th>
               <th className="text-left px-5 py-3.5 text-[10px] font-extrabold text-[var(--color-text-secondary)] uppercase tracking-wider">Team</th>
               <th className="text-left px-5 py-3.5 text-[10px] font-extrabold text-[var(--color-text-secondary)] uppercase tracking-wider">#</th>
+              <th className="text-left px-5 py-3.5 text-[10px] font-extrabold text-[var(--color-text-secondary)] uppercase tracking-wider">Origin</th>
               <th className="text-left px-5 py-3.5 text-[10px] font-extrabold text-[var(--color-text-secondary)] uppercase tracking-wider">Status</th>
-              <th className="text-left px-5 py-3.5 text-[10px] font-extrabold text-[var(--color-text-secondary)] uppercase tracking-wider">Image</th>
               <th className="text-right px-5 py-3.5 text-[10px] font-extrabold text-[var(--color-text-secondary)] uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
@@ -284,8 +346,8 @@ export default function DriversPage() {
               <tr key={driver.id} className={`border-b border-[var(--color-border)] last:border-0 hover:bg-white/[0.02] transition-colors ${!driver.active ? "opacity-50" : ""}`}>
                 <td className="px-5 py-3.5">
                   <div className="flex items-center gap-3">
-                    {driver.image_url ? (
-                      <img src={driver.image_url} alt={driver.name} className="w-9 h-9 rounded-xl object-cover shrink-0" />
+                    {driver.origin ? (
+                      <FlagImg code={driver.origin} size={28} />
                     ) : (
                       <div className="w-9 h-9 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center shrink-0">
                         <Car size={16} className="text-[var(--color-primary)]" />
@@ -299,6 +361,13 @@ export default function DriversPage() {
                   <span className="text-sm font-mono font-bold">{driver.number}</span>
                 </td>
                 <td className="px-5 py-3.5">
+                  {driver.origin ? (
+                    <span className="text-sm flex items-center gap-1.5"><FlagImg code={driver.origin} size={18} /> {COUNTRIES.find(c => c.code === driver.origin)?.name || driver.origin}</span>
+                  ) : (
+                    <span className="text-[10px] text-[var(--color-text-secondary)] italic">Not set</span>
+                  )}
+                </td>
+                <td className="px-5 py-3.5">
                   <span className={`inline-block text-[10px] font-extrabold px-2.5 py-1 rounded-lg uppercase tracking-wider ${
                     driver.active
                       ? "bg-[var(--color-green)]/10 text-[var(--color-green)] border border-[var(--color-green)]/20"
@@ -306,13 +375,6 @@ export default function DriversPage() {
                   }`}>
                     {driver.active ? "Active" : "Inactive"}
                   </span>
-                </td>
-                <td className="px-5 py-3.5">
-                  {driver.image_url ? (
-                    <span className="text-[10px] text-[var(--color-green)] font-bold">Uploaded</span>
-                  ) : (
-                    <span className="text-[10px] text-[var(--color-text-secondary)] italic">None</span>
-                  )}
                 </td>
                 <td className="px-5 py-3.5 text-right">
                   <div className="flex items-center justify-end gap-1">

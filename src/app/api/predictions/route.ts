@@ -70,7 +70,12 @@ export async function POST(request: NextRequest) {
     if (!race) {
       return NextResponse.json({ error: "Race not found" }, { status: 404 });
     }
-    if (race.locked || race.status !== "upcoming") {
+
+    // Block predictions only when qualifying has actually started (time-based)
+    const now = new Date();
+    const qualiStarted = race.qualifyingTime && new Date(race.qualifyingTime) <= now;
+    const raceEnded = race.status === "completed" || race.status === "cancelled";
+    if (qualiStarted || raceEnded) {
       return NextResponse.json(
         { error: "This event has already started. You can no longer set predictions for this race." },
         { status: 403 }
@@ -110,7 +115,8 @@ export async function PUT(request: NextRequest) {
         return NextResponse.json({ error: "All 3 DigitAlb multiplier tokens have been used this season" }, { status: 400 });
       }
       const race = await getRace(raceId);
-      if (race && race.locked) {
+      const qualiStarted = race?.qualifyingTime && new Date(race.qualifyingTime) <= new Date();
+      if (race && qualiStarted) {
         return NextResponse.json({ error: "Cannot deploy token after qualifying has started" }, { status: 403 });
       }
       await deployDigitAlbToken(user.id, raceId);

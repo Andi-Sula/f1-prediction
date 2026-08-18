@@ -27,6 +27,27 @@ interface Race {
   visible: boolean;
 }
 
+const formatBestLapInput = (value: string) => {
+  const digits = value.replace(/\D/g, "").slice(0, 7);
+
+  if (digits.length <= 2) {
+    return digits;
+  }
+
+  if (digits.length <= 5) {
+    const minutes = digits.slice(0, 1);
+    const seconds = digits.slice(1, Math.min(3, digits.length));
+    const milliseconds = digits.slice(3);
+    return `${minutes}:${seconds}${milliseconds ? `.${milliseconds}` : ""}`;
+  }
+
+  const minutes = digits.slice(0, digits.length - 5);
+  const seconds = digits.slice(digits.length - 5, digits.length - 3);
+  const milliseconds = digits.slice(digits.length - 3);
+
+  return `${minutes}:${seconds}.${milliseconds}`;
+};
+
 export default function RacesPage() {
   const [races, setRaces] = useState<Race[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,6 +102,10 @@ export default function RacesPage() {
       best_lap: race.best_lap || "",
     });
     setShowForm(true);
+  };
+
+  const handleBestLapChange = (value: string) => {
+    setForm({ ...form, best_lap: formatBestLapInput(value) });
   };
 
   const handleSave = async () => {
@@ -228,7 +253,7 @@ export default function RacesPage() {
               <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">
                 Best Lap Time (M:SS.mmm)
               </label>
-              <input type="text" placeholder="1:23.456" value={form.best_lap} onChange={e => setForm({ ...form, best_lap: e.target.value })}
+              <input type="text" inputMode="numeric" placeholder="1:23.456" value={form.best_lap} onChange={e => handleBestLapChange(e.target.value)}
                 className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-sm text-[var(--color-text)] font-mono placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
             </div>
             <div className="flex gap-3 pt-2">

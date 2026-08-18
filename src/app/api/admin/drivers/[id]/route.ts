@@ -14,14 +14,14 @@ export async function PUT(
   const { id } = await params;
 
   try {
-    const { code, name, team, number, image_url, active } = await request.json();
+    const { code, name, team, number, origin, active } = await request.json();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updates: Record<string, any> = { updated_at: new Date().toISOString() };
     if (code !== undefined) updates.code = code.toUpperCase();
     if (name !== undefined) updates.name = name;
     if (team !== undefined) updates.team = team;
     if (number !== undefined) updates.number = parseInt(number, 10);
-    if (image_url !== undefined) updates.image_url = image_url;
+    if (origin !== undefined) updates.origin = origin;
     if (active !== undefined) updates.active = active;
 
     const { data, error: dbError } = await supabaseAdmin

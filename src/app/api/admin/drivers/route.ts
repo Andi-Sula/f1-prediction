@@ -27,13 +27,13 @@ export async function POST(request: NextRequest) {
   if (adminErr) return adminErr;
 
   try {
-    const { code, name, team, number, image_url } = await request.json();
+    const { code, name, team, number, origin } = await request.json();
     if (!code || !name || !team || number === undefined) {
       return NextResponse.json({ success: false, message: "Code, name, team, and number are required" }, { status: 400 });
     }
     const { data, error: dbError } = await supabaseAdmin
       .from("drivers")
-      .insert({ code: code.toUpperCase(), name, team, number: parseInt(number, 10), image_url: image_url || null, active: true })
+      .insert({ code: code.toUpperCase(), name, team, number: parseInt(number, 10), origin: origin || null, active: true })
       .select()
       .single();
     if (dbError) throw dbError;
@@ -50,7 +50,7 @@ export async function PUT(request: NextRequest) {
   if (adminErr) return adminErr;
 
   try {
-    const { id, code, name, team, number, image_url, active } = await request.json();
+    const { id, code, name, team, number, origin, active } = await request.json();
     if (!id) return NextResponse.json({ success: false, message: "Driver ID is required" }, { status: 400 });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -59,7 +59,7 @@ export async function PUT(request: NextRequest) {
     if (name !== undefined) updates.name = name;
     if (team !== undefined) updates.team = team;
     if (number !== undefined) updates.number = parseInt(number, 10);
-    if (image_url !== undefined) updates.image_url = image_url;
+    if (origin !== undefined) updates.origin = origin;
     if (active !== undefined) updates.active = active;
 
     const { data, error: dbError } = await supabaseAdmin

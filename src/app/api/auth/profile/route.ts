@@ -39,6 +39,7 @@ export async function GET(request: NextRequest) {
         name: user.name,
         surname: user.surname,
         telephone: user.telephone || "",
+        address: user.address || "",
         birthday: user.birthday || "",
         role: user.role,
         status: user.status,
@@ -62,11 +63,12 @@ export async function PUT(request: NextRequest) {
   }
 
   try {
-    const { name, surname, username, email, telephone, birthday } = await request.json();
+    const { name, surname, username, email, telephone, birthday, address } = await request.json();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updates: Record<string, any> = {};
     if (name !== undefined) updates.name = name.trim() || "";
     if (surname !== undefined) updates.surname = surname.trim() || "";
+    if (address !== undefined) updates.address = address.trim() || null;
     if (email !== undefined && email.trim()) updates.email = email.trim();
     if (telephone !== undefined) updates.telephone = telephone.trim() || null;
     if (birthday !== undefined) updates.birthday = birthday || null;

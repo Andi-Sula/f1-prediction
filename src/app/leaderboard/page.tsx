@@ -25,8 +25,8 @@ interface Race {
 interface RoundWinner {
   raceId: string;
   raceName: string;
-  username: string;
-  points: number;
+  roundNumber: number;
+  top3: { username: string; points: number; rank: number }[];
 }
 
 export default function LeaderboardPage() {
@@ -63,11 +63,16 @@ export default function LeaderboardPage() {
             const data = await res.json();
             scores[race.id] = data;
             if (data.length > 0) {
+              const roundNum = racesData.findIndex(r => r.id === race.id) + 1;
               winners.push({
                 raceId: race.id,
                 raceName: race.name.replace(" Grand Prix", " GP"),
-                username: data[0].username || data[0].name,
-                points: data[0].points,
+                roundNumber: roundNum,
+                top3: data.slice(0, 3).map((u: any, i: number) => ({
+                  username: u.username || u.name,
+                  points: u.points,
+                  rank: i + 1,
+                })),
               });
             }
           }
@@ -132,7 +137,7 @@ export default function LeaderboardPage() {
                 : "text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
             }`}
           >
-            RD{races.filter(r => r.status === "completed").length - i} {shortName(race.name).split(" ")[0]}
+            RD{races.findIndex(r => r.id === race.id) + 1} {shortName(race.name).split(" ")[0]}
           </button>
         ))}
       </div>
@@ -220,11 +225,21 @@ export default function LeaderboardPage() {
               {roundWinners.length > 0 ? roundWinners.map((w, i) => (
                 <div key={w.raceId} className={`${i > 0 ? "pt-3 border-t border-[var(--color-border)]" : ""}`}>
                   <div className="text-[10px] text-[var(--color-text-secondary)] uppercase tracking-wider font-semibold">
-                    Round {races.filter(r => r.status === "completed").length - i} — {w.raceName}
+                    Round {w.roundNumber} — {w.raceName}
                   </div>
-                  <div className="flex items-baseline gap-2 mt-0.5">
-                    <span className="text-sm font-bold text-[var(--color-primary)]">{w.username}</span>
-                    <span className="text-[10px] text-[var(--color-text-secondary)]">{w.points} pts</span>
+                  <div className="space-y-1 mt-1.5">
+                    {w.top3.map((u) => (
+                      <div key={u.rank} className="flex items-center gap-2">
+                        <span
+                          className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-extrabold text-white shrink-0"
+                          style={{ backgroundColor: badgeColor(u.rank) }}
+                        >
+                          {u.rank}
+                        </span>
+                        <span className={`text-sm font-bold truncate ${u.rank === 1 ? "text-[var(--color-primary)]" : "text-[var(--color-text)]"}`}>{u.username}</span>
+                        <span className="text-[10px] text-[var(--color-text-secondary)] ml-auto shrink-0">{u.points} pts</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )) : (
