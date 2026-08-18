@@ -191,13 +191,13 @@ export default function PredictionsPage() {
               return (
                 <div key={pos} className="flex flex-col items-center gap-2 text-center">
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-extrabold text-sm shadow-md"
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-white font-extrabold text-xs shadow-md"
                     style={{ backgroundColor: colors[pos - 1] }}
                   >
                     {pos}
                   </div>
                   {prize?.icon_url && (
-                    <img src={prize.icon_url} alt={prize.label || ""} className="w-16 h-16 object-contain" />
+                    <img src={prize.icon_url} alt={prize.label || ""} className="w-28 h-28 object-contain" />
                   )}
                   <div className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-widest">{titles[pos - 1]}</div>
                   <div className="text-sm font-semibold leading-snug">{prize?.label || "TBA"}</div>

@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
         .map((s: any) => {
           const u = s.users;
           const sd = s.score_data || {};
-          const total = sd.total || 0;
+          const total = sd.finalScore || sd.total || 0;
           return {
             id: u.id,
             username: u.username,

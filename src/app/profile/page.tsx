@@ -26,6 +26,7 @@ interface ProfileData {
   email: string;
   name: string;
   surname: string;
+  address: string;
   telephone: string;
   birthday: string;
   createdAt: string;
@@ -44,7 +45,7 @@ export default function ProfilePage() {
   const [digitalbLinked, setDigitalbLinked] = useState(false);
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [editing, setEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ name: "", surname: "", username: "", email: "", telephone: "", birthday: "" });
+  const [editForm, setEditForm] = useState({ name: "", surname: "", username: "", email: "", telephone: "", birthday: "", address: "" });
   const [saving, setSaving] = useState(false);
   const [editMsg, setEditMsg] = useState("");
 
@@ -74,6 +75,7 @@ export default function ProfilePage() {
       email: profile.email || "",
       telephone: profile.telephone || "",
       birthday: profile.birthday || "",
+      address: profile.address || "",
     });
     setEditMsg("");
     setEditing(true);
@@ -152,6 +154,12 @@ export default function ProfilePage() {
           <div>
             <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Email</label>
             <input type="email" value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })}
+              className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-sm focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+          </div>
+          <div>
+            <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Address</label>
+            <input value={editForm.address} onChange={e => setEditForm({ ...editForm, address: e.target.value })}
+              placeholder="123 Main Street, City"
               className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-sm focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
           </div>
           <div className="grid grid-cols-2 gap-3">
