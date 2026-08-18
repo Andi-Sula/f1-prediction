@@ -216,7 +216,7 @@ export default function PredictionsPage() {
       <Ticks />
 
       {/* Selected race label */}
-      <h2 className="text-lg font-extrabold">Predictions for {raceName || "..."}</h2>
+      <h2 className="text-lg font-extrabold">Predictions for the {raceName || "..."}</h2>
 
       {/* Lock Banner */}
       {allLocked && raceStatus !== "upcoming" && (
@@ -251,14 +251,14 @@ export default function PredictionsPage() {
           <TimeInput placeholder="MM" value={poleMin} onChange={setPoleMin} maxLength={2} />
           <span className="text-lg font-bold text-[var(--color-text-secondary)]">:</span>
           <TimeInput placeholder="SS" value={poleSec} onChange={setPoleSec} maxLength={2} />
-          <span className="text-lg font-bold text-[var(--color-text-secondary)]">:</span>
+          <span className="text-lg font-bold text-[var(--color-text-secondary)]">.</span>
           <TimeInput placeholder="mmm" value={poleMs} onChange={setPoleMs} maxLength={3} width="w-16" />
         </div>
         <div className="flex items-center justify-between mt-3 px-1">
-          <span className="text-xs text-[var(--color-text-secondary)]">Format: 01:25:000</span>
+          <span className="text-xs text-[var(--color-text-secondary)]">Format: 01:25.000</span>
           {bestLap && (
             <div className="flex items-center gap-2 text-xs">
-              <span className="text-[var(--color-text-secondary)]">Last Quali Best Lap:</span>
+              <span className="text-[var(--color-text-secondary)]">Last Quali Time:</span>
               <span className="font-bold font-mono text-[var(--color-text)]">{bestLap}</span>
             </div>
           )}
@@ -348,8 +348,8 @@ export default function PredictionsPage() {
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-bold text-sm text-white">DigitAlb 2× Points</h3>
-                <span className="bg-white text-[var(--color-primary)] text-[10px] font-extrabold px-2 py-0.5 rounded-md">2×</span>
+                <h3 className="font-bold text-sm text-white">DigitAlb</h3>
+                <span className="bg-white text-[var(--color-primary)] text-[10px] font-extrabold px-2 py-0.5 rounded-md">2× MULTIPLIER</span>
               </div>
               <p className="text-xs text-white/80">Add your subscriber ID in your profile to double your points — usable in 3 races per season.</p>
               <div className="flex items-center gap-1 mt-2 text-xs font-bold text-white/80 group-hover:text-white transition-colors">

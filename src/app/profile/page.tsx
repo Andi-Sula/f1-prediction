@@ -254,7 +254,7 @@ export default function ProfilePage() {
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-bold text-sm text-white">DigitAlb 2× Points</h3>
+                <h3 className="font-bold text-sm text-white">DigitAlb</h3>
                 <span className="bg-white text-[var(--color-primary)] text-[10px] font-extrabold px-2 py-0.5 rounded-md">2× MULTIPLIER</span>
               </div>
               <p className="text-xs text-white/80 mb-3">Add your subscriber ID to double your points — usable in 3 races per season.</p>
