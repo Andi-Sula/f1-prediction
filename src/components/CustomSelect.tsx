@@ -5,6 +5,7 @@ import { ChevronDown, Check } from "lucide-react";
 interface Option {
   value: string;
   label: string;
+  icon?: string;
 }
 
 interface CustomSelectProps {
@@ -36,7 +37,8 @@ export default function CustomSelect({ value, onChange, options, placeholder = "
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-sm text-left cursor-pointer hover:border-[var(--color-text-secondary)] focus:border-[var(--color-primary)] focus:outline-none transition-colors"
       >
-        <span className={selected ? "text-[var(--color-text)]" : "text-[var(--color-text-secondary)]"}>
+        <span className={`flex items-center gap-2 ${selected ? "text-[var(--color-text)]" : "text-[var(--color-text-secondary)]"}`}>
+          {selected?.icon && <img src={selected.icon} alt="" className="w-5 h-5 shrink-0" />}
           {selected ? selected.label : placeholder}
         </span>
         <ChevronDown size={16} className={`text-[var(--color-text-secondary)] transition-transform ${open ? "rotate-180" : ""}`} />
@@ -58,6 +60,7 @@ export default function CustomSelect({ value, onChange, options, placeholder = "
                       : "text-[var(--color-text)] hover:bg-[var(--color-border)]/40"
                   }`}
                 >
+                  {opt.icon && <img src={opt.icon} alt="" className="w-5 h-5 shrink-0" />}
                   <span className="flex-1 truncate">{opt.label}</span>
                   {active && <Check size={14} className="text-[var(--color-primary)] shrink-0" />}
                 </button>
