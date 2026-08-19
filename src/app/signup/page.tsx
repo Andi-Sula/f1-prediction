@@ -186,7 +186,7 @@ export default function SignUpPage() {
                     type="text"
                     value={form.name}
                     onChange={(e) => updateField("name", e.target.value)}
-                    placeholder="John"
+                    placeholder=""
                     required
                     className={inputClass}
                   />
@@ -202,7 +202,7 @@ export default function SignUpPage() {
                     type="text"
                     value={form.surname}
                     onChange={(e) => updateField("surname", e.target.value)}
-                    placeholder="Doe"
+                    placeholder=""
                     required
                     className={inputClass}
                   />
