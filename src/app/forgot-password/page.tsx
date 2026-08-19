@@ -22,7 +22,7 @@ function ForgotPasswordContent() {
 
   const [step, setStep] = useState(1); // 1=email, 2=OTP, 3=new password
   const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState(["", "", "", "", "", "", "", ""]);
+  const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -30,7 +30,7 @@ function ForgotPasswordContent() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const otpInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (resendCooldown > 0) {
@@ -61,59 +61,24 @@ function ForgotPasswordContent() {
     } else {
       setStep(2);
       setResendCooldown(60);
-      setTimeout(() => inputRefs.current[0]?.focus(), 100);
+      setTimeout(() => otpInputRef.current?.focus(), 100);
     }
     setLoading(false);
   };
 
-  // OTP input handlers
-  const handleChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return;
-    const newOtp = [...otp];
-    newOtp[index] = value.slice(-1);
-    setOtp(newOtp);
+  // OTP input handler
+  const handleOtpChange = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 8);
+    setOtp(digits);
     setError("");
 
-    if (value && index < 7) {
-      inputRefs.current[index + 1]?.focus();
-    }
-
-    if (value && index === 7) {
-      const fullOtp = newOtp.join("");
-      if (fullOtp.length === 8) {
-        setStep(3);
-      }
-    }
-  };
-
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 8);
-    if (pasted.length === 0) return;
-
-    const newOtp = [...otp];
-    for (let i = 0; i < 8; i++) {
-      newOtp[i] = pasted[i] || "";
-    }
-    setOtp(newOtp);
-
-    const focusIndex = Math.min(pasted.length, 7);
-    inputRefs.current[focusIndex]?.focus();
-
-    if (pasted.length === 8) {
+    if (digits.length === 8) {
       setStep(3);
     }
   };
 
   const handleConfirmOTP = () => {
-    const code = otp.join("");
-    if (code.length !== 8) {
+    if (otp.length !== 8) {
       setError("Please enter all 8 digits");
       return;
     }
@@ -128,8 +93,8 @@ function ForgotPasswordContent() {
     const result = await forgotPassword(email);
     if (result.success) {
       setSuccess("A new code has been sent to your email");
-      setOtp(["", "", "", "", "", "", "", ""]);
-      inputRefs.current[0]?.focus();
+      setOtp("");
+      otpInputRef.current?.focus();
       setResendCooldown(60);
       setTimeout(() => setSuccess(""), 3000);
     } else {
@@ -152,7 +117,7 @@ function ForgotPasswordContent() {
     setError("");
     setLoading(true);
 
-    const otpString = otp.join("");
+    const otpString = otp;
     const result = await resetPassword(email, otpString, newPassword);
     if (!result.success) {
       setError(result.message || "Password reset failed");
@@ -235,34 +200,26 @@ function ForgotPasswordContent() {
         {/* Step 2: OTP Input */}
         {step === 2 && (
           <div className="space-y-4">
-            <div className="flex justify-center gap-2">
-              {otp.map((digit, i) => (
-                <div key={i} className="relative">
-                  {i === 4 && (
-                    <div className="absolute -left-2.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[var(--color-border)]" />
-                  )}
-                  <input
-                    ref={(el) => { inputRefs.current[i] = el; }}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleChange(i, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(i, e)}
-                    onPaste={i === 0 ? handlePaste : undefined}
-                    className={`w-11 h-14 text-center text-xl font-extrabold rounded-xl border-2 transition-all focus:outline-none ${
-                      digit
-                        ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
-                        : "border-[var(--color-border)] bg-[var(--color-surface)]"
-                    } focus:border-[var(--color-primary)] text-[var(--color-text)]`}
-                  />
-                </div>
-              ))}
+            <div className="flex justify-center">
+              <input
+                ref={otpInputRef}
+                type="text"
+                inputMode="numeric"
+                maxLength={8}
+                value={otp}
+                onChange={(e) => handleOtpChange(e.target.value)}
+                placeholder="Enter 8-digit code"
+                className={`w-full max-w-xs text-center text-2xl font-extrabold tracking-[0.3em] font-mono rounded-xl border-2 py-4 transition-all focus:outline-none ${
+                  otp.length === 8
+                    ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
+                    : "border-[var(--color-border)] bg-[var(--color-surface)]"
+                } focus:border-[var(--color-primary)] text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)]/30 placeholder:text-base placeholder:tracking-normal placeholder:font-normal`}
+              />
             </div>
 
             <button
               onClick={handleConfirmOTP}
-              disabled={otp.join("").length !== 8}
+              disabled={otp.length !== 8}
               className="w-full bg-[var(--color-primary)] text-white rounded-xl py-3.5 text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Continue

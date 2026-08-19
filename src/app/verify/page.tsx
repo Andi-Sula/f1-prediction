@@ -10,12 +10,12 @@ function VerifyOTPContent() {
   const email = searchParams.get("email") || "";
   const { verifyOTP, resendOTP } = useAuth();
 
-  const [otp, setOtp] = useState(["", "", "", "", "", "", "", ""]);
+  const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!email) router.push("/login");
@@ -29,55 +29,21 @@ function VerifyOTPContent() {
   }, [resendCooldown]);
 
   useEffect(() => {
-    inputRefs.current[0]?.focus();
+    inputRef.current?.focus();
   }, []);
 
-  const handleChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return;
-    const newOtp = [...otp];
-    newOtp[index] = value.slice(-1);
-    setOtp(newOtp);
+  const handleChange = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 8);
+    setOtp(digits);
     setError("");
 
-    if (value && index < 7) {
-      inputRefs.current[index + 1]?.focus();
-    }
-
-    if (value && index === 7) {
-      const fullOtp = newOtp.join("");
-      if (fullOtp.length === 8) {
-        handleVerify(fullOtp);
-      }
-    }
-  };
-
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 8);
-    if (pasted.length === 0) return;
-
-    const newOtp = [...otp];
-    for (let i = 0; i < 8; i++) {
-      newOtp[i] = pasted[i] || "";
-    }
-    setOtp(newOtp);
-
-    const focusIndex = Math.min(pasted.length, 7);
-    inputRefs.current[focusIndex]?.focus();
-
-    if (pasted.length === 8) {
-      handleVerify(pasted);
+    if (digits.length === 8) {
+      handleVerify(digits);
     }
   };
 
   const handleVerify = async (otpString?: string) => {
-    const code = otpString || otp.join("");
+    const code = otpString || otp;
     if (code.length !== 8) {
       setError("Please enter all 8 digits");
       return;
@@ -104,8 +70,8 @@ function VerifyOTPContent() {
     const result = await resendOTP(email);
     if (result.success) {
       setSuccess("A new code has been sent to your email");
-      setOtp(["", "", "", "", "", "", "", ""]);
-      inputRefs.current[0]?.focus();
+      setOtp("");
+      inputRef.current?.focus();
       setResendCooldown(60);
       setTimeout(() => setSuccess(""), 3000);
     } else {
@@ -152,35 +118,27 @@ function VerifyOTPContent() {
         )}
 
         {/* OTP Input */}
-        <div className="flex justify-center gap-2">
-          {otp.map((digit, i) => (
-            <div key={i} className="relative">
-              {i === 4 && (
-                <div className="absolute -left-2.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[var(--color-border)]" />
-              )}
-              <input
-                ref={(el) => { inputRefs.current[i] = el; }}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
-                value={digit}
-                onChange={(e) => handleChange(i, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(i, e)}
-                onPaste={i === 0 ? handlePaste : undefined}
-                className={`w-11 h-14 text-center text-xl font-extrabold rounded-xl border-2 transition-all focus:outline-none ${
-                  digit
-                    ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
-                    : "border-[var(--color-border)] bg-[var(--color-surface)]"
-                } focus:border-[var(--color-primary)] text-[var(--color-text)]`}
-              />
-            </div>
-          ))}
+        <div className="flex justify-center">
+          <input
+            ref={inputRef}
+            type="text"
+            inputMode="numeric"
+            maxLength={8}
+            value={otp}
+            onChange={(e) => handleChange(e.target.value)}
+            placeholder="Enter 8-digit code"
+            className={`w-full max-w-xs text-center text-2xl font-extrabold tracking-[0.3em] font-mono rounded-xl border-2 py-4 transition-all focus:outline-none ${
+              otp.length === 8
+                ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
+                : "border-[var(--color-border)] bg-[var(--color-surface)]"
+            } focus:border-[var(--color-primary)] text-[var(--color-text)] placeholder:text-[var(--color-text-secondary)]/30 placeholder:text-base placeholder:tracking-normal placeholder:font-normal`}
+          />
         </div>
 
         {/* Verify Button */}
         <button
           onClick={() => handleVerify()}
-          disabled={loading || otp.join("").length !== 8}
+          disabled={loading || otp.length !== 8}
           className="w-full bg-[var(--color-primary)] text-white rounded-xl py-3.5 text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {loading ? (

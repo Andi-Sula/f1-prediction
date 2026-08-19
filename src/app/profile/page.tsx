@@ -153,8 +153,8 @@ export default function ProfilePage() {
           </div>
           <div>
             <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Email</label>
-            <input type="email" value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })}
-              className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-sm focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+            <input type="email" value={editForm.email} disabled
+              className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-sm text-[var(--color-text-secondary)] cursor-not-allowed opacity-60" />
           </div>
           <div>
             <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Address</label>
@@ -217,8 +217,8 @@ export default function ProfilePage() {
         {/* Raiffeisen Boost */}
         <div className="bg-[#FFDD00] rounded-2xl p-5">
           <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-black/10 flex items-center justify-center shrink-0">
-              <Zap size={20} className="text-black" />
+            <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0">
+              <img src="/raiffeisen-logo.png" alt="Raiffeisen" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
@@ -249,8 +249,8 @@ export default function ProfilePage() {
         {/* DigitAlb 2× Points */}
         <div className="bg-[var(--color-primary)] rounded-2xl p-5 shadow-lg shadow-[var(--color-primary)]/20">
           <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0">
-              <Tv size={20} className="text-[var(--color-primary)]" />
+            <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0">
+              <img src="/digitalb-logo.webp" alt="DigitAlb" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">

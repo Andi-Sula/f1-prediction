@@ -351,12 +351,17 @@ export default function PredictionsPage() {
       <Ticks />
 
       {/* Boost Promotions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-4">
+        <h2 className="text-xs font-extrabold tracking-[0.15em] uppercase flex items-center gap-2">
+          <Zap size={14} className="text-[var(--color-primary)]" />
+          Boost Your Prediction
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Raiffeisen Boost Promo */}
         <Link href="/profile" className="group bg-[#FFDD00] rounded-2xl p-5 hover:shadow-lg hover:shadow-[#FFDD00]/20 transition-all">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-black/10 flex items-center justify-center shrink-0">
-              <Zap size={20} className="text-black" />
+            <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0">
+              <img src="/raiffeisen-logo.png" alt="Raiffeisen" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
@@ -374,8 +379,8 @@ export default function PredictionsPage() {
         {/* DigitAlb 2× Promo */}
         <Link href="/profile" className="group bg-[var(--color-primary)] rounded-2xl p-5 hover:shadow-lg hover:shadow-[var(--color-primary)]/30 transition-all">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0">
-              <Tv size={20} className="text-[var(--color-primary)]" />
+            <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0">
+              <img src="/digitalb-logo.webp" alt="DigitAlb" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
@@ -389,6 +394,7 @@ export default function PredictionsPage() {
             </div>
           </div>
         </Link>
+        </div>
       </div>
 
       {/* Save */}
