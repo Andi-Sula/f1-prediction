@@ -14,7 +14,18 @@ export async function GET(request: NextRequest) {
       .select("*")
       .order("date", { ascending: true });
     if (dbError) throw dbError;
-    return NextResponse.json({ success: true, races: data });
+
+    // Check actual results existence to override stale results_published flag
+    const { data: resultsData } = await supabaseAdmin
+      .from("race_results")
+      .select("race_id");
+    const raceIdsWithResults = new Set((resultsData || []).map(r => r.race_id));
+    const races = (data || []).map(race => ({
+      ...race,
+      results_published: raceIdsWithResults.has(race.id),
+    }));
+
+    return NextResponse.json({ success: true, races });
   } catch {
     return NextResponse.json({ success: false, message: "Failed to fetch races" }, { status: 500 });
   }
