@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import CustomSelect from "@/components/CustomSelect";
-import QualifyingCountdown from "@/components/QualifyingCountdown";
 import RaceCalendar from "@/components/RaceCalendar";
 import { supabase } from "@/lib/supabase";
 
@@ -27,6 +26,7 @@ interface Driver {
   code: string;
   name: string;
   team: string;
+  origin?: string;
 }
 
 interface Race {
@@ -37,9 +37,29 @@ interface Race {
   status: string;
 }
 
+const RACE_COUNTRY_CODES: Record<string, string> = {
+  "Australian": "au", "Bahrain": "bh", "Saudi Arabian": "sa",
+  "Japanese": "jp", "Chinese": "cn", "Miami": "us",
+  "Emilia Romagna": "it", "Monaco": "mc", "Canadian": "ca",
+  "Spanish": "es", "Austrian": "at", "British": "gb",
+  "Hungarian": "hu", "Belgian": "be", "Dutch": "nl",
+  "Italian": "it", "Azerbaijan": "az", "Singapore": "sg",
+  "United States": "us", "Mexico City": "mx", "Mexican": "mx",
+  "São Paulo": "br", "Brazil": "br",
+  "Qatar": "qa", "Abu Dhabi": "ae", "Portuguese": "pt",
+  "Turkish": "tr", "Russian": "ru", "Barcelona": "es",
+};
+
+function getRaceCountryCode(name: string): string | null {
+  for (const [key, code] of Object.entries(RACE_COUNTRY_CODES)) {
+    if (name.includes(key)) return code;
+  }
+  return null;
+}
+
 export default function PredictionsPage() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
-  const [races, setRaces] = useState<Race[]>([]);
+  const [, setRaces] = useState<Race[]>([]);
   const [selectedRaceId, setSelectedRaceId] = useState("");
   const [raceP1, setRaceP1] = useState("");
   const [raceP2, setRaceP2] = useState("");
@@ -53,13 +73,12 @@ export default function PredictionsPage() {
   const [poleMin, setPoleMin] = useState("");
   const [poleSec, setPoleSec] = useState("");
   const [poleMs, setPoleMs] = useState("");
-  const [raiffeisenCode, setRaiffeisenCode] = useState("");
-  const [boostApplied, setBoostApplied] = useState(false);
+
   const [message, setMessage] = useState("");
   const [raceName, setRaceName] = useState("");
   const [raceStatus, setRaceStatus] = useState<string>("upcoming");
   const [raceId, setRaceId] = useState<string>("");
-  const [qualifyingTime, setQualifyingTime] = useState<string | null>(null);
+  const [, setQualifyingTime] = useState<string | null>(null);
   const [bestLap, setBestLap] = useState<string | null>(null);
   const [prizes, setPrizes] = useState<{ position: number; icon_url: string | null; label: string | null }[]>([]);
 
@@ -79,6 +98,7 @@ export default function PredictionsPage() {
     loadRaces();
     const interval = setInterval(loadRaces, 30000);
     return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -197,6 +217,7 @@ export default function PredictionsPage() {
                     {pos}
                   </div>
                   {prize?.icon_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={prize.icon_url} alt={prize.label || ""} className="w-28 h-28 object-contain" />
                   )}
                   <div className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-widest">{titles[pos - 1]}</div>
@@ -216,7 +237,17 @@ export default function PredictionsPage() {
       <Ticks />
 
       {/* Selected race label */}
-      <h2 className="text-lg font-extrabold">Predictions for the {raceName || "..."}</h2>
+      <h2 className="text-lg font-extrabold flex items-center gap-2">
+        Predictions for the {raceName || "..."}
+        {raceName && getRaceCountryCode(raceName) && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={`https://hatscripts.github.io/circle-flags/flags/${getRaceCountryCode(raceName)}.svg`}
+            alt=""
+            className="w-7 h-7 shrink-0"
+          />
+        )}
+      </h2>
 
       {/* Lock Banner */}
       {allLocked && raceStatus !== "upcoming" && (
@@ -396,7 +427,11 @@ function Card({ icon, title, subtitle, children }: { icon: React.ReactNode; titl
 function DriverPicker({ label, badge, value, onChange, drivers, color }: {
   label: string; badge: string; value: string; onChange: (v: string) => void; drivers: Driver[]; color: string;
 }) {
-  const options = drivers.map(d => ({ value: d.code, label: `${d.name} (${d.code}) — ${d.team}` }));
+  const options = drivers.map(d => ({
+    value: d.code,
+    label: `${d.name} (${d.code}) — ${d.team}`,
+    icon: d.origin ? `https://hatscripts.github.io/circle-flags/flags/${d.origin.toLowerCase()}.svg` : undefined,
+  }));
   return (
     <div className="flex items-center gap-3">
       <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-extrabold text-xs shadow-sm" style={{ backgroundColor: color }}>

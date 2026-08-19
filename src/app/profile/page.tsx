@@ -37,7 +37,7 @@ interface ProfileData {
 }
 
 export default function ProfilePage() {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const [notifications, setNotifications] = useState(true);
   const [raiffeisenCode, setRaiffeisenCode] = useState("");
   const [raiffeisenLinked, setRaiffeisenLinked] = useState(false);
