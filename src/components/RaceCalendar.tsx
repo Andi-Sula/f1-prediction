@@ -95,7 +95,7 @@ export default function RaceCalendar({ onSelectRace, selectedRaceId }: RaceCalen
               <button
                 key={race.id}
                 onClick={() => onSelectRace ? onSelectRace(race.id) : setSelected(race)}
-                className={`shrink-0 w-[120px] rounded-xl p-3 text-left transition-all duration-200 border-2 ${
+                className={`shrink-0 w-[140px] rounded-xl p-3 text-left transition-all duration-200 border-2 ${
                   selectedRaceId === race.id
                     ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5 shadow-md"
                     : isLive
@@ -119,7 +119,7 @@ export default function RaceCalendar({ onSelectRace, selectedRaceId }: RaceCalen
                 </div>
 
                 {/* Name */}
-                <div className={`text-[11px] font-bold leading-tight mb-1 ${
+                <div className={`text-[13px] font-bold leading-snug mb-1 ${
                   isCancelled ? "line-through text-[var(--color-text-secondary)]" : "text-[var(--color-text)]"
                 }`}>
                   {shortName(race.name)}

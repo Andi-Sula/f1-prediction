@@ -37,7 +37,7 @@ export default function QualifyingCountdown({ qualifyingTime, compact }: Qualify
     return (
       <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 shadow-sm">
         <Clock size={12} className="text-amber-500" />
-        <span className="text-[11px] font-bold text-amber-600">Predictions closes in</span>
+        <span className="text-[11px] font-bold text-amber-600">Prediction closes in</span>
         <span className="font-mono text-[11px] font-extrabold text-[var(--color-text)]">
           {timeLeft.days}d {pad(timeLeft.hours)}:{pad(timeLeft.minutes)}:{pad(timeLeft.seconds)}
         </span>
@@ -49,7 +49,7 @@ export default function QualifyingCountdown({ qualifyingTime, compact }: Qualify
     <div className="flex items-center gap-3 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3">
       <Clock size={16} className="text-amber-500 shrink-0" />
       <div className="flex-1">
-        <div className="text-xs font-bold text-amber-500 mb-1">Predictions closes in</div>
+        <div className="text-xs font-bold text-amber-500 mb-1">Prediction closes in</div>
         <div className="flex gap-2 font-mono text-sm font-extrabold text-[var(--color-text)]">
           <span className="bg-[var(--color-background)] px-2 py-1 rounded-lg">{timeLeft.days}<span className="text-[10px] text-[var(--color-text-secondary)] ml-0.5">d</span></span>
           <span className="bg-[var(--color-background)] px-2 py-1 rounded-lg">{pad(timeLeft.hours)}<span className="text-[10px] text-[var(--color-text-secondary)] ml-0.5">h</span></span>

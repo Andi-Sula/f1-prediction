@@ -6,7 +6,6 @@ import {
   ShieldAlert,
   AlertTriangle,
   Timer,
-  Zap,
   CheckCircle2,
   Save,
   Minus,
@@ -244,7 +243,7 @@ export default function PredictionsPage() {
           <img
             src={`https://hatscripts.github.io/circle-flags/flags/${getRaceCountryCode(raceName)}.svg`}
             alt=""
-            className="w-7 h-7 shrink-0"
+            className="w-7 h-7 shrink-0 rounded-full shadow-sm ring-1 ring-black/10"
           />
         )}
       </h2>
@@ -279,11 +278,11 @@ export default function PredictionsPage() {
         subtitle={qualiLocked ? "Pole time prediction has been locked" : "Predict the fastest qualifying lap"}
       >
         <div className="flex items-center gap-2">
-          <TimeInput placeholder="MM" value={poleMin} onChange={setPoleMin} maxLength={2} />
+          <TimeInput placeholder="MM" value={poleMin} onChange={setPoleMin} maxLength={2} id="pole-min" nextId="pole-sec" />
           <span className="text-lg font-bold text-[var(--color-text-secondary)]">:</span>
-          <TimeInput placeholder="SS" value={poleSec} onChange={setPoleSec} maxLength={2} />
+          <TimeInput placeholder="SS" value={poleSec} onChange={setPoleSec} maxLength={2} id="pole-sec" nextId="pole-ms" prevId="pole-min" />
           <span className="text-lg font-bold text-[var(--color-text-secondary)]">.</span>
-          <TimeInput placeholder="mmm" value={poleMs} onChange={setPoleMs} maxLength={3} width="w-16" />
+          <TimeInput placeholder="mmm" value={poleMs} onChange={setPoleMs} maxLength={3} width="w-16" id="pole-ms" prevId="pole-sec" />
         </div>
         <div className="flex items-center justify-between mt-3 px-1">
           <span className="text-xs text-[var(--color-text-secondary)]">Format: 01:25.000</span>
@@ -348,14 +347,12 @@ export default function PredictionsPage() {
       </div>
       </div>
 
-      <Ticks />
-
       {/* Boost Promotions */}
       <div className="space-y-4">
-        <h2 className="text-xs font-extrabold tracking-[0.15em] uppercase flex items-center gap-2">
-          <Zap size={14} className="text-[var(--color-primary)]" />
-          Boost Your Prediction
-        </h2>
+        <div className="flex items-center gap-3">
+          <Ticks />
+          <h2 className="text-lg font-extrabold tracking-[0.08em] uppercase whitespace-nowrap">Boost Your Prediction</h2>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Raiffeisen Boost Promo */}
         <Link href="/profile" className="group bg-[#FFDD00] rounded-2xl p-5 hover:shadow-lg hover:shadow-[#FFDD00]/20 transition-all">
@@ -477,14 +474,26 @@ function Stepper({ value, onChange, min, max }: { value: number; onChange: (v: n
   );
 }
 
-function TimeInput({ placeholder, value, onChange, maxLength, width = "w-14" }: { placeholder: string; value: string; onChange: (v: string) => void; maxLength: number; width?: string }) {
+function TimeInput({ placeholder, value, onChange, maxLength, width = "w-14", id, nextId, prevId }: { placeholder: string; value: string; onChange: (v: string) => void; maxLength: number; width?: string; id?: string; nextId?: string; prevId?: string }) {
   return (
     <input
+      id={id}
       type="text"
       maxLength={maxLength}
       placeholder={placeholder}
       value={value}
-      onChange={e => onChange(e.target.value.replace(/\D/g, ""))}
+      onChange={e => {
+        const val = e.target.value.replace(/\D/g, "");
+        onChange(val);
+        if (val.length >= maxLength && nextId) {
+          document.getElementById(nextId)?.focus();
+        }
+      }}
+      onKeyDown={e => {
+        if (e.key === "Backspace" && value === "" && prevId) {
+          document.getElementById(prevId)?.focus();
+        }
+      }}
       className={`${width} text-center font-bold font-mono text-lg border border-[var(--color-border)] rounded-xl bg-[var(--color-background)] py-2.5 text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none transition-colors`}
     />
   );
