@@ -53,9 +53,10 @@ export default function ResultsPage() {
   const [poleMs, setPoleMs] = useState("");
   const [message, setMessage] = useState("");
   const [publishedScores, setPublishedScores] = useState<ScoreBreakdown[]>([]);
+  const [hasResultsInDb, setHasResultsInDb] = useState(false);
 
   const selectedRaceData = races.find(r => r.id === selectedRace);
-  const hasResults = selectedRaceData?.results_published ?? false;
+  const hasResults = hasResultsInDb;
 
   useEffect(() => {
     fetch("/api/drivers").then(r => r.json()).then(setDrivers).catch(() => {});
@@ -111,11 +112,13 @@ export default function ResultsPage() {
         setPoleMin(r.poleTime?.minutes || "");
         setPoleSec(r.poleTime?.seconds || "");
         setPoleMs(r.poleTime?.milliseconds || "");
+        setHasResultsInDb(true);
       } else {
         setRaceP1(""); setRaceP2(""); setRaceP3("");
         setQualiP1(""); setQualiP2(""); setQualiP3("");
         setSafetyCar(false); setRain(false); setDnfCount(0);
         setPoleMin(""); setPoleSec(""); setPoleMs("");
+        setHasResultsInDb(false);
       }
       setPublishedScores([]);
     })();
@@ -196,7 +199,8 @@ export default function ResultsPage() {
           onChange={setSelectedRace}
           options={races.map(r => {
             const formatted = r.qualifying_time ? new Date(r.qualifying_time).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "";
-            return { value: r.id, label: `${r.name}${formatted ? ` — ${formatted}` : ""} (${r.status})${r.results_published ? " ✓ Results set" : ""}` };
+            const showResultsSet = r.id === selectedRace ? hasResultsInDb : r.results_published;
+            return { value: r.id, label: `${r.name}${formatted ? ` — ${formatted}` : ""} (${r.status})${showResultsSet ? " ✓ Results set" : ""}` };
           })}
           placeholder="Select race"
         />
