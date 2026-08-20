@@ -11,7 +11,6 @@ import {
   Minus,
   Plus,
   Clock,
-  Tv,
   ArrowRight,
   Lock,
   Trophy,
@@ -62,7 +61,6 @@ function getRaceCountryCode(name: string): string | null {
 
 export default function PredictionsPage() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
-  const [, setRaces] = useState<Race[]>([]);
   const [selectedRaceId, setSelectedRaceId] = useState("");
   const [raceP1, setRaceP1] = useState("");
   const [raceP2, setRaceP2] = useState("");
@@ -94,24 +92,12 @@ export default function PredictionsPage() {
       fetch("/api/prizes").then(r => r.json()).then(setPrizes).catch(() => {}),
       fetch("/api/drivers").then(r => r.json()).then(setDrivers).catch(() => {}),
       fetch("/api/races").then(r => r.json()).then((data: Race[]) => {
-        setRaces(data);
         const active = data.find(r => ["qualifying", "race_day"].includes(r.status));
         const upcoming = data.find(r => r.status === "upcoming");
-        const defaultRace = active || upcoming || data[0];
-        if (defaultRace && !selectedRaceId) setSelectedRaceId(defaultRace.id);
+        const currentRace = active || upcoming || data[0];
+        if (currentRace) setSelectedRaceId(currentRace.id);
       }).catch(() => {}),
     ]).finally(() => setPageReady(true));
-    const interval = setInterval(() => {
-      fetch("/api/races").then(r => r.json()).then((data: Race[]) => {
-        setRaces(data);
-        const active = data.find(r => ["qualifying", "race_day"].includes(r.status));
-        const upcoming = data.find(r => r.status === "upcoming");
-        const defaultRace = active || upcoming || data[0];
-        if (defaultRace && !selectedRaceId) setSelectedRaceId(defaultRace.id);
-      }).catch(() => {});
-    }, 30000);
-    return () => clearInterval(interval);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -250,11 +236,11 @@ export default function PredictionsPage() {
       <Ticks />
 
       {/* Race Calendar */}
-      <RaceCalendar onSelectRace={setSelectedRaceId} selectedRaceId={selectedRaceId} />
+      <RaceCalendar selectedRaceId={selectedRaceId} />
 
       <Ticks />
 
-      {/* Selected race label */}
+      {/* Current race label */}
       <h2 className="text-lg font-extrabold flex items-center gap-2">
         Predictions for the {raceName || "..."}
         {raceName && getRaceCountryCode(raceName) && (
