@@ -153,10 +153,10 @@ export function calculateEventScore(prediction: FullPrediction, actualResults: A
   const conditions = scoreConditions(prediction.conditions, actualResults.conditions);
 
   const baseScore = qualifying.points + poleTime.points + race.points + conditions.points;
-  const raiffeisenBoost = prediction.boosts?.raiffeisen ? 15 : 0;
-  const subtotal = baseScore + raiffeisenBoost;
   const digitAlbMultiplier = prediction.boosts?.digitAlbToken ? 2 : 1;
-  const finalScore = subtotal * digitAlbMultiplier;
+  const multipliedScore = baseScore * digitAlbMultiplier;
+  const raiffeisenBoost = prediction.boosts?.raiffeisen ? 15 : 0;
+  const finalScore = multipliedScore + raiffeisenBoost;
 
   return {
     qualifying,
@@ -165,9 +165,9 @@ export function calculateEventScore(prediction: FullPrediction, actualResults: A
     conditions,
     baseScore,
     maxBaseScore: 129,
-    raiffeisenBoost,
     digitAlbMultiplier,
-    subtotal,
+    multipliedScore,
+    raiffeisenBoost,
     finalScore,
     breakdown: {
       qualifying: qualifying.breakdown,
