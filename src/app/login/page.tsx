@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, Eye, EyeOff, FlagTriangleRight, AlertCircle, Loader2 } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 
 export default function LoginPage() {
@@ -41,11 +41,9 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-6">
         {/* Header */}
         <div className="text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center mx-auto shadow-lg shadow-[var(--color-primary)]/20">
-            <FlagTriangleRight size={24} className="text-white" />
-          </div>
+          <img src="/geek-room-logo.png" alt="Geek Room" className="w-14 h-14 rounded-2xl mx-auto shadow-lg" />
           <div>
-            <div className="text-[9px] font-extrabold text-[var(--color-primary)] tracking-[0.2em] uppercase">Geek Room</div>
+            <div className="text-sm font-extrabold tracking-tight"><span className="text-[var(--color-text)]">Geek Room</span> <span className="text-[#2DB544]">F1 Predictor</span></div>
             <h1 className="text-2xl font-extrabold tracking-tight mt-1">Welcome Back</h1>
             <p className="text-sm text-[var(--color-text-secondary)] mt-1">Sign in to your F1 Predictor account</p>
           </div>

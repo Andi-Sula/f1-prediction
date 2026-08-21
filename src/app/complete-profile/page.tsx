@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Phone, Calendar, FlagTriangleRight, AlertCircle, Loader2, AtSign } from "lucide-react";
+import { MapPin, Phone, Calendar, AlertCircle, Loader2, AtSign } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/lib/supabase";
 
@@ -84,11 +84,9 @@ export default function CompleteProfilePage() {
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center mx-auto shadow-lg shadow-[var(--color-primary)]/20">
-            <FlagTriangleRight size={24} className="text-white" />
-          </div>
+          <img src="/geek-room-logo.png" alt="Geek Room" className="w-14 h-14 rounded-2xl mx-auto shadow-lg" />
           <div>
-            <div className="text-[9px] font-extrabold text-[var(--color-primary)] tracking-[0.2em] uppercase">Geek Room</div>
+            <div className="text-[9px] font-extrabold text-[#2DB544] tracking-[0.2em] uppercase">Geek Room</div>
             <h1 className="text-2xl font-extrabold tracking-tight mt-1">Complete Your Profile</h1>
             <p className="text-sm text-[var(--color-text-secondary)] mt-1">
               {user?.name ? `Welcome ${user.name}! ` : ""}Just a few more details to get started
