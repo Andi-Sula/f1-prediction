@@ -221,8 +221,8 @@ export default function RaceCalendar({ onSelectRace, selectedRaceId }: RaceCalen
                 </div>
               </div>
 
-              {/* Countdown for upcoming */}
-              {selected.status === "upcoming" && selected.qualifying_time && (
+              {/* Countdown only for the next predictable race */}
+              {selected.status === "upcoming" && selected.qualifying_time && !hasActive && selected.id === races.find(r => r.status === "upcoming")?.id && (
                 <QualifyingCountdown qualifyingTime={selected.qualifying_time} />
               )}
             </div>

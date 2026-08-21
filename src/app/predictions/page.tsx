@@ -11,14 +11,17 @@ import {
   Minus,
   Plus,
   Clock,
-  Tv,
   ArrowRight,
   Lock,
   Trophy,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import CustomSelect from "@/components/CustomSelect";
 import RaceCalendar from "@/components/RaceCalendar";
+import ScoringRegulations from "@/components/ScoringRegulations";
+import GameRegulations from "@/components/GameRegulations";
+import TermsAndConditions from "@/components/TermsAndConditions";
 import { supabase } from "@/lib/supabase";
 
 interface Driver {
@@ -58,7 +61,6 @@ function getRaceCountryCode(name: string): string | null {
 
 export default function PredictionsPage() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
-  const [, setRaces] = useState<Race[]>([]);
   const [selectedRaceId, setSelectedRaceId] = useState("");
   const [raceP1, setRaceP1] = useState("");
   const [raceP2, setRaceP2] = useState("");
@@ -80,24 +82,22 @@ export default function PredictionsPage() {
   const [, setQualifyingTime] = useState<string | null>(null);
   const [bestLap, setBestLap] = useState<string | null>(null);
   const [prizes, setPrizes] = useState<{ position: number; icon_url: string | null; label: string | null }[]>([]);
+  const [pageReady, setPageReady] = useState(false);
 
   const qualiLocked = raceStatus !== "upcoming";
   const allLocked = raceStatus !== "upcoming";
 
   useEffect(() => {
-    fetch("/api/prizes").then(r => r.json()).then(setPrizes).catch(() => {});
-    fetch("/api/drivers").then(r => r.json()).then(setDrivers).catch(() => {});
-    const loadRaces = () => fetch("/api/races").then(r => r.json()).then((data: Race[]) => {
-      setRaces(data);
-      const active = data.find(r => ["qualifying", "race_day"].includes(r.status));
-      const upcoming = data.find(r => r.status === "upcoming");
-      const defaultRace = active || upcoming || data[0];
-      if (defaultRace && !selectedRaceId) setSelectedRaceId(defaultRace.id);
-    }).catch(() => {});
-    loadRaces();
-    const interval = setInterval(loadRaces, 30000);
-    return () => clearInterval(interval);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    Promise.all([
+      fetch("/api/prizes").then(r => r.json()).then(setPrizes).catch(() => {}),
+      fetch("/api/drivers").then(r => r.json()).then(setDrivers).catch(() => {}),
+      fetch("/api/races").then(r => r.json()).then((data: Race[]) => {
+        const active = data.find(r => ["qualifying", "race_day"].includes(r.status));
+        const upcoming = data.find(r => r.status === "upcoming");
+        const currentRace = active || upcoming || data[0];
+        if (currentRace) setSelectedRaceId(currentRace.id);
+      }).catch(() => {}),
+    ]).finally(() => setPageReady(true));
   }, []);
 
   useEffect(() => {
@@ -172,6 +172,11 @@ export default function PredictionsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6 sm:space-y-8 min-h-[calc(100vh-4rem)] pb-24 md:pb-10">
+      {!pageReady ? (
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 size={32} className="animate-spin text-[var(--color-primary)]" />
+        </div>
+      ) : (<>
       {/* Toast */}
       {message && (
         <div className={`fixed top-20 right-6 flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold z-50 shadow-lg ${message.includes("submitted") || message.includes("saved") ? "bg-[var(--color-green)] text-black" : "bg-[var(--color-primary)] text-white"}`}>
@@ -231,11 +236,11 @@ export default function PredictionsPage() {
       <Ticks />
 
       {/* Race Calendar */}
-      <RaceCalendar onSelectRace={setSelectedRaceId} selectedRaceId={selectedRaceId} />
+      <RaceCalendar selectedRaceId={selectedRaceId} />
 
       <Ticks />
 
-      {/* Selected race label */}
+      {/* Current race label */}
       <h2 className="text-lg font-extrabold flex items-center gap-2">
         Predictions for the {raceName || "..."}
         {raceName && getRaceCountryCode(raceName) && (
@@ -405,8 +410,16 @@ export default function PredictionsPage() {
           {allLocked ? "PREDICTIONS LOCKED" : "SAVE PREDICTIONS"}
         </button>
         {!allLocked && <p className="text-xs text-[var(--color-text-secondary)] text-center mt-2">Your predictions are auto-submitted and can be changed anytime before the deadline.</p>}
+        <div className="mt-3 flex items-center justify-center gap-4">
+          <ScoringRegulations />
+          <span className="text-[var(--color-border)]">·</span>
+          <GameRegulations />
+          <span className="text-[var(--color-border)]">·</span>
+          <TermsAndConditions />
+        </div>
       </div>
 
+    </>)}
     </div>
   );
 }

@@ -5,10 +5,6 @@ import {
   Star,
   CheckCircle,
   CheckCircle2,
-  Bell,
-  Globe,
-  HelpCircle,
-  Info,
   LogOut,
   ChevronRight,
   Trophy,
@@ -17,6 +13,7 @@ import {
   Loader2,
   Pencil,
   Save,
+  AlertCircle,
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/lib/supabase";
@@ -38,7 +35,6 @@ interface ProfileData {
 
 export default function ProfilePage() {
   const { logout } = useAuth();
-  const [notifications, setNotifications] = useState(true);
   const [raiffeisenCode, setRaiffeisenCode] = useState("");
   const [raiffeisenLinked, setRaiffeisenLinked] = useState(false);
   const [digitalbId, setDigitalbId] = useState("");
@@ -161,6 +157,10 @@ export default function ProfilePage() {
             <input value={editForm.address} onChange={e => setEditForm({ ...editForm, address: e.target.value })}
               placeholder="123 Main Street, City"
               className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-sm focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
+            <p className="text-[10px] text-red-500 mt-1.5 ml-1 flex items-center gap-1">
+              <AlertCircle size={10} className="shrink-0" />
+              An Albanian address is obligatory to receive the prizes awarded.
+            </p>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -278,47 +278,8 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Settings */}
-      <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-5">
-        <h3 className="font-bold text-sm mb-4 flex items-center gap-2">
-          <User size={16} className="text-[var(--color-text-secondary)]" />
-          Settings
-        </h3>
-        <div className="divide-y divide-[var(--color-border)]">
-          <div className="flex items-center justify-between py-3.5">
-            <div className="flex items-center gap-3">
-              <Bell size={18} className="text-[var(--color-primary)]" />
-              <span className="text-sm font-semibold">Notifications</span>
-            </div>
-            <button
-              onClick={() => setNotifications(!notifications)}
-              className={`w-12 h-7 rounded-full transition-colors relative ${notifications ? "bg-[var(--color-primary)]" : "bg-[var(--color-border)]"}`}
-            >
-              <div className={`w-5 h-5 rounded-full bg-white absolute top-1 transition-all duration-200 ${notifications ? "left-6" : "left-1"}`} />
-            </button>
-          </div>
-          <div className="flex items-center justify-between py-3.5">
-            <div className="flex items-center gap-3">
-              <Globe size={18} className="text-[var(--color-primary)]" />
-              <span className="text-sm font-semibold">Language</span>
-            </div>
-            <span className="text-sm text-[var(--color-text-secondary)] font-medium">English</span>
-          </div>
-        </div>
-      </div>
-
       {/* Actions */}
       <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden">
-        <button className="w-full flex items-center gap-3 px-5 py-4 border-b border-[var(--color-border)] hover:bg-white/[0.02] transition-colors text-left group">
-          <HelpCircle size={18} className="text-[var(--color-text-secondary)]" />
-          <span className="flex-1 text-sm font-semibold">Help & Support</span>
-          <ChevronRight size={16} className="text-[var(--color-text-secondary)] group-hover:translate-x-0.5 transition-transform" />
-        </button>
-        <button className="w-full flex items-center gap-3 px-5 py-4 border-b border-[var(--color-border)] hover:bg-white/[0.02] transition-colors text-left group">
-          <Info size={18} className="text-[var(--color-text-secondary)]" />
-          <span className="flex-1 text-sm font-semibold">About</span>
-          <ChevronRight size={16} className="text-[var(--color-text-secondary)] group-hover:translate-x-0.5 transition-transform" />
-        </button>
         <button onClick={logout} className="w-full flex items-center gap-3 px-5 py-4 hover:bg-[var(--color-primary)]/5 transition-colors text-left group">
           <LogOut size={18} className="text-[var(--color-primary)]" />
           <span className="flex-1 text-sm font-semibold text-[var(--color-primary)]">Log Out</span>
