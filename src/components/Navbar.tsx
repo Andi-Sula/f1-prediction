@@ -38,8 +38,8 @@ export default function Navbar() {
           <Link href="/" className="flex items-center gap-2.5 group">
             <img src="/geek-room-logo.png" alt="Geek Room" className="w-9 h-9 rounded-lg transition-transform group-hover:scale-105" />
             <div className="leading-tight">
-              <div className="text-[9px] font-extrabold text-[#2DB544] tracking-[0.2em] uppercase">Geek Room</div>
-              <div className="text-sm font-extrabold text-[var(--color-text)] tracking-tight">F1 PREDICTOR</div>
+              <div className="text-[9px] font-extrabold text-[var(--color-text)] tracking-[0.2em] uppercase">Geek Room</div>
+              <div className="text-sm font-extrabold text-[#2DB544] tracking-tight">F1 PREDICTOR</div>
             </div>
           </Link>
 
@@ -108,8 +108,8 @@ export default function Navbar() {
           <Link href="/" className="flex items-center gap-2">
             <img src="/geek-room-logo.png" alt="Geek Room" className="w-8 h-8 rounded-lg" />
             <div className="leading-tight">
-              <div className="text-[8px] font-extrabold text-[#2DB544] tracking-[0.2em] uppercase">Geek Room</div>
-              <div className="text-xs font-extrabold text-[var(--color-text)] tracking-tight">F1 PREDICTOR</div>
+              <div className="text-[8px] font-extrabold text-[var(--color-text)] tracking-[0.2em] uppercase">Geek Room</div>
+              <div className="text-xs font-extrabold text-[#2DB544] tracking-tight">F1 PREDICTOR</div>
             </div>
           </Link>
 
