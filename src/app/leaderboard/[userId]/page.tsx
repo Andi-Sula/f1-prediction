@@ -94,7 +94,7 @@ async function getUserPredictions(userId: string): Promise<UserData | null> {
     return {
       user: {
         id: user.id,
-        name: `${user.name} ${user.surname.charAt(0)}.`,
+        name: user.username || `${user.name} ${user.surname.charAt(0)}.`,
         avatar,
         rank: rank || 0,
         points: user.points || 0,
