@@ -92,9 +92,9 @@ export default function PredictionsPage() {
       fetch("/api/prizes").then(r => r.json()).then(setPrizes).catch(() => {}),
       fetch("/api/drivers").then(r => r.json()).then(setDrivers).catch(() => {}),
       fetch("/api/races").then(r => r.json()).then((data: Race[]) => {
-        const active = data.find(r => ["qualifying", "race_day"].includes(r.status));
         const upcoming = data.find(r => r.status === "upcoming");
-        const currentRace = active || upcoming || data[0];
+        const active = data.find(r => ["qualifying", "race_day"].includes(r.status));
+        const currentRace = upcoming || active || data[0];
         if (currentRace) setSelectedRaceId(currentRace.id);
       }).catch(() => {}),
     ]).finally(() => setPageReady(true));
