@@ -78,6 +78,12 @@ export default function ProfilePage() {
   };
 
   const saveProfile = async () => {
+    if (!editForm.username.trim()) { setEditMsg("Username is required"); return; }
+    if (editForm.username.trim().length < 3) { setEditMsg("Username must be at least 3 characters"); return; }
+    if (!editForm.name.trim()) { setEditMsg("First name is required"); return; }
+    if (!editForm.surname.trim()) { setEditMsg("Last name is required"); return; }
+    if (!editForm.address.trim()) { setEditMsg("Address is required"); return; }
+    if (editForm.address.trim().length < 5) { setEditMsg("Address must be at least 5 characters"); return; }
     setSaving(true);
     setEditMsg("");
     try {
@@ -131,18 +137,18 @@ export default function ProfilePage() {
             <div className="text-xs font-medium text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{editMsg}</div>
           )}
           <div>
-            <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Username</label>
+            <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Username <span className="text-[var(--color-primary)]">*</span></label>
             <input value={editForm.username} onChange={e => setEditForm({ ...editForm, username: e.target.value })}
               className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-sm focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">First Name</label>
+              <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">First Name <span className="text-[var(--color-primary)]">*</span></label>
               <input value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })}
                 className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-sm focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
             </div>
             <div>
-              <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Last Name</label>
+              <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Last Name <span className="text-[var(--color-primary)]">*</span></label>
               <input value={editForm.surname} onChange={e => setEditForm({ ...editForm, surname: e.target.value })}
                 className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-sm focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
             </div>
@@ -153,12 +159,12 @@ export default function ProfilePage() {
               className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-sm text-[var(--color-text-secondary)] cursor-not-allowed opacity-60" />
           </div>
           <div>
-            <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Address</label>
+            <label className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block mb-1">Address <span className="text-[var(--color-primary)]">*</span></label>
             <input value={editForm.address} onChange={e => setEditForm({ ...editForm, address: e.target.value })}
               placeholder="123 Main Street, City"
               className="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-sm focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
-            <p className="text-[10px] text-red-500 mt-1.5 ml-1 flex items-center gap-1">
-              <AlertCircle size={10} className="shrink-0" />
+            <p className="text-[10px] text-black mt-1.5 ml-1 flex items-center gap-1">
+              
               An Albanian address is obligatory to receive the prizes awarded.
             </p>
           </div>

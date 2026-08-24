@@ -222,8 +222,8 @@ export default function SignUpPage() {
                   className={inputClass}
                 />
               </div>
-              <p className="text-[10px] text-red-500 mt-1.5 ml-1 flex items-center gap-1">
-                <AlertCircle size={10} className="shrink-0" />
+              <p className="text-[10px] text-black mt-1.5 ml-1 flex items-center gap-1">
+                
                 An Albanian address is obligatory to receive the prizes awarded.
               </p>
             </div>
