@@ -137,8 +137,8 @@ export default function CompleteProfilePage() {
                 className={inputClass}
               />
             </div>
-            <p className="text-[11px] text-[var(--color-primary)] mt-1.5 ml-1 flex items-center gap-1">
-              <AlertCircle size={11} /> An Albanian address is obligatory to receive the prizes awarded.
+            <p className="text-[11px] text-black mt-1.5 ml-1 flex items-center gap-1">
+               An Albanian address is obligatory to receive the prizes awarded.
             </p>
           </div>
 
