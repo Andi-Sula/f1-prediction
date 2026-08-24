@@ -8,7 +8,6 @@ import {
   Lock,
   Eye,
   EyeOff,
-  FlagTriangleRight,
   AlertCircle,
   Loader2,
   MapPin,
@@ -126,11 +125,9 @@ export default function SignUpPage() {
       <div className="w-full max-w-md space-y-6">
         {/* Header */}
         <div className="text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center mx-auto shadow-lg shadow-[var(--color-primary)]/20">
-            <FlagTriangleRight size={24} className="text-white" />
-          </div>
+          <img src="/geek-room-logo.png" alt="Geek Room" className="w-14 h-14 rounded-2xl mx-auto shadow-lg" />
           <div>
-            <div className="text-[9px] font-extrabold text-[var(--color-primary)] tracking-[0.2em] uppercase">Geek Room</div>
+            <div className="text-sm font-extrabold tracking-tight"><span className="text-[var(--color-text)]">Geek Room</span> <span className="text-[#2DB544]">F1 Predictor</span></div>
             <h1 className="text-2xl font-extrabold tracking-tight mt-1">Create Account</h1>
             <p className="text-sm text-[var(--color-text-secondary)] mt-1">
               {step === 1 ? "Start with your personal details" : "Set up your account credentials"}

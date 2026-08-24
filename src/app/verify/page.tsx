@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FlagTriangleRight, AlertCircle, CheckCircle2, Loader2, Mail, RotateCw } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2, Mail, RotateCw } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 
 function VerifyOTPContent() {
@@ -88,9 +88,7 @@ function VerifyOTPContent() {
       <div className="w-full max-w-md space-y-6">
         {/* Header */}
         <div className="text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center mx-auto shadow-lg shadow-[var(--color-primary)]/20">
-            <FlagTriangleRight size={24} className="text-white" />
-          </div>
+          <img src="/geek-room-logo.png" alt="Geek Room" className="w-14 h-14 rounded-2xl mx-auto shadow-lg" />
           <div>
             <h1 className="text-2xl font-extrabold tracking-tight">Verify Your Email</h1>
             <p className="text-sm text-[var(--color-text-secondary)] mt-2">

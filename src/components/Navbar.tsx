@@ -7,7 +7,6 @@ import {
   User,
   Settings,
   Gift,
-  FlagTriangleRight,
   Menu,
   X,
   LogIn,
@@ -37,12 +36,10 @@ export default function Navbar() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[var(--color-surface)]/80 backdrop-blur-xl border-b border-[var(--color-border)] hidden md:block">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-lg bg-[var(--color-primary)] flex items-center justify-center transition-transform group-hover:scale-105">
-              <FlagTriangleRight size={18} className="text-white" />
-            </div>
+            <img src="/geek-room-logo.png" alt="Geek Room" className="w-9 h-9 rounded-lg transition-transform group-hover:scale-105" />
             <div className="leading-tight">
-              <div className="text-[9px] font-extrabold text-[var(--color-primary)] tracking-[0.2em] uppercase">Geek Room</div>
-              <div className="text-sm font-extrabold text-[var(--color-text)] tracking-tight">F1 PREDICTOR</div>
+              <div className="text-[9px] font-extrabold text-[var(--color-text)] tracking-[0.2em] uppercase">Geek Room</div>
+              <div className="text-sm font-extrabold text-[#2DB544] tracking-tight">F1 PREDICTOR</div>
             </div>
           </Link>
 
@@ -109,12 +106,10 @@ export default function Navbar() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[var(--color-surface)]/80 backdrop-blur-xl border-b border-[var(--color-border)] md:hidden">
         <div className="px-4 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[var(--color-primary)] flex items-center justify-center">
-              <FlagTriangleRight size={15} className="text-white" />
-            </div>
+            <img src="/geek-room-logo.png" alt="Geek Room" className="w-8 h-8 rounded-lg" />
             <div className="leading-tight">
-              <div className="text-[8px] font-extrabold text-[var(--color-primary)] tracking-[0.2em] uppercase">Geek Room</div>
-              <div className="text-xs font-extrabold text-[var(--color-text)] tracking-tight">F1 PREDICTOR</div>
+              <div className="text-[8px] font-extrabold text-[var(--color-text)] tracking-[0.2em] uppercase">Geek Room</div>
+              <div className="text-xs font-extrabold text-[#2DB544] tracking-tight">F1 PREDICTOR</div>
             </div>
           </Link>
 
