@@ -79,22 +79,27 @@ export default function PredictionsPage() {
   const [raceName, setRaceName] = useState("");
   const [raceStatus, setRaceStatus] = useState<string>("upcoming");
   const [raceId, setRaceId] = useState<string>("");
-  const [, setQualifyingTime] = useState<string | null>(null);
+  const [qualifyingTime, setQualifyingTime] = useState<string | null>(null);
   const [bestLap, setBestLap] = useState<string | null>(null);
   const [prizes, setPrizes] = useState<{ position: number; icon_url: string | null; label: string | null }[]>([]);
   const [pageReady, setPageReady] = useState(false);
 
-  const qualiLocked = raceStatus !== "upcoming";
-  const allLocked = raceStatus !== "upcoming";
+  const deadlinePassed = qualifyingTime ? new Date(qualifyingTime).getTime() - 5 * 60 * 1000 <= Date.now() : false;
+  const qualiLocked = raceStatus !== "upcoming" || deadlinePassed;
+  const allLocked = raceStatus !== "upcoming" || deadlinePassed;
 
   useEffect(() => {
     Promise.all([
       fetch("/api/prizes").then(r => r.json()).then(setPrizes).catch(() => {}),
       fetch("/api/drivers").then(r => r.json()).then(setDrivers).catch(() => {}),
       fetch("/api/races").then(r => r.json()).then((data: Race[]) => {
+        const now = Date.now();
+        const isOpen = (r: Race) =>
+          r.status === "upcoming" &&
+          (!r.qualifying_time || new Date(r.qualifying_time).getTime() - 5 * 60 * 1000 > now);
+        const upcoming = data.find(isOpen);
         const active = data.find(r => ["qualifying", "race_day"].includes(r.status));
-        const upcoming = data.find(r => r.status === "upcoming");
-        const currentRace = active || upcoming || data[0];
+        const currentRace = upcoming || active || data[0];
         if (currentRace) setSelectedRaceId(currentRace.id);
       }).catch(() => {}),
     ]).finally(() => setPageReady(true));

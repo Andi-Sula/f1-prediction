@@ -144,7 +144,7 @@ export default function RaceCalendar({ onSelectRace, selectedRaceId }: RaceCalen
                 )}
                 {isUpcoming && (
                   <div className={`text-[9px] font-bold uppercase ${isNext ? "text-amber-600" : "text-[var(--color-green)]"}`}>
-                    {isNext ? "Next Up" : "Open"}
+                    {isNext ? "Next Up" : "Upcoming"}
                   </div>
                 )}
                 {isDone && (
