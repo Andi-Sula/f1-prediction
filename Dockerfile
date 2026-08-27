@@ -11,6 +11,9 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+##Set to false for vercel
+ENV BUILD_STANDALONE=true
 RUN npm run build
 
 # --- Production ---
