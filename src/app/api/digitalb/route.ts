@@ -2,7 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase-server";
 
-const DIGITALB_API_URL = "https://extservices.digitalb.tv:9381";
+const DIGITALB_API_URL = "https://extservices.digitalb.tv:9381/DgaPartner.asmx";
+const SOAP_ACTION = "http://tempuri.org/IsActiveClient";
+
+function escapeXml(value: string): string {
+  return value.replace(/[<>&'"]/g, c =>
+    ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" })[c]!
+  );
+}
+
+function readTag(xml: string, tag: string): string | null {
+  if (new RegExp(`<${tag}\\s*/>`).test(xml)) return "";
+  return xml.match(new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`))?.[1]?.trim() ?? null;
+}
 
 export async function POST(request: NextRequest) {
   const { user, error } = await authenticateRequest(request);
@@ -22,20 +34,51 @@ export async function POST(request: NextRequest) {
 
     const sanitized = usernameOrSc.trim();
 
-    const res = await fetch(
-      `${DIGITALB_API_URL}/IsActiveClient?usernameOrSc=${encodeURIComponent(sanitized)}`
-    );
+    const envelope = `<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <IsActiveClient xmlns="http://tempuri.org/">
+      <usernameOrSc>${escapeXml(sanitized)}</usernameOrSc>
+    </IsActiveClient>
+  </soap:Body>
+</soap:Envelope>`;
+
+    const res = await fetch(DIGITALB_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/xml; charset=utf-8",
+        SOAPAction: SOAP_ACTION,
+      },
+      body: envelope,
+      signal: AbortSignal.timeout(10000),
+    });
+
+    const xml = await res.text();
 
     if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      console.error("[DigitAlb] API error:", res.status, text);
+      console.error("[DigitAlb] HTTP", res.status, xml.slice(0, 500));
       return NextResponse.json(
         { success: false, message: "Unable to reach DigitAlb service" },
         { status: 502 }
       );
     }
 
-    const data: { IsActive: boolean; HasError: boolean; ErrorMessage: string } = await res.json();
+    const isActive = readTag(xml, "IsActive");
+    const hasError = readTag(xml, "HasError");
+
+    if (isActive === null || hasError === null) {
+      console.error("[DigitAlb] Unexpected response:", xml.slice(0, 500));
+      return NextResponse.json(
+        { success: false, message: "Unexpected response from DigitAlb" },
+        { status: 502 }
+      );
+    }
+
+    const data = {
+      IsActive: isActive === "true",
+      HasError: hasError === "true",
+      ErrorMessage: readTag(xml, "ErrorMessage") ?? "",
+    };
 
     if (data.HasError) {
       return NextResponse.json(
