@@ -31,6 +31,9 @@ interface ProfileData {
   rank: number;
   predictionsCount: number;
   racesCompleted: number;
+  digitalbId: string | null;
+  digitalbActive: boolean;
+  digitalbUsesLeft: number;
 }
 
 export default function ProfilePage() {
@@ -39,6 +42,9 @@ export default function ProfilePage() {
   const [raiffeisenLinked, setRaiffeisenLinked] = useState(false);
   const [digitalbId, setDigitalbId] = useState("");
   const [digitalbLinked, setDigitalbLinked] = useState(false);
+  const [digitalbUsesLeft, setDigitalbUsesLeft] = useState(3);
+  const [digitalbLoading, setDigitalbLoading] = useState(false);
+  const [digitalbMsg, setDigitalbMsg] = useState("");
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({ name: "", surname: "", username: "", email: "", telephone: "", birthday: "", address: "" });
@@ -54,7 +60,14 @@ export default function ProfilePage() {
       });
       if (!res.ok) return;
       const json = await res.json();
-      if (json.user) setProfile(json.user);
+      if (json.user) {
+        setProfile(json.user);
+        if (json.user.digitalbId) {
+          setDigitalbId(json.user.digitalbId);
+          setDigitalbLinked(json.user.digitalbActive);
+          setDigitalbUsesLeft(json.user.digitalbUsesLeft ?? 3);
+        }
+      }
     })();
   }, []);
 
@@ -264,19 +277,56 @@ export default function ProfilePage() {
                 <span className="bg-white text-[var(--color-primary)] text-[10px] font-extrabold px-2 py-0.5 rounded-md">2× MULTIPLIER</span>
               </div>
               <p className="text-xs text-white/80 mb-3">Add your subscriber ID to double your points — usable in 3 races per season.</p>
+              {digitalbMsg && (
+                <div className="text-xs font-medium text-white bg-white/20 rounded-lg px-3 py-2 mb-3">{digitalbMsg}</div>
+              )}
               <div className="flex items-center gap-3">
                 <input
                   type="text"
                   placeholder="DigitAlb username / card number"
                   value={digitalbId}
-                  onChange={e => { setDigitalbId(e.target.value); setDigitalbLinked(e.target.value.length >= 4); }}
-                  className="flex-1 min-w-0 font-medium text-sm border-none rounded-xl bg-white/95 px-4 py-2.5 text-[var(--color-background)] placeholder:text-[var(--color-text-secondary)] focus:outline-2 focus:outline-white transition-colors"
+                  onChange={e => { setDigitalbId(e.target.value); setDigitalbMsg(""); }}
+                  disabled={digitalbLinked}
+                  className="flex-1 min-w-0 font-medium text-sm border-none rounded-xl bg-white/95 px-4 py-2.5 text-black placeholder:text-black/40 focus:outline-2 focus:outline-white transition-colors disabled:opacity-60"
                 />
-                {digitalbLinked && (
+                {digitalbLinked ? (
                   <div className="flex items-center gap-1.5 text-white text-sm font-semibold shrink-0">
                     <CheckCircle2 size={16} />
-                    Linked — 3 uses left
+                    Linked — {digitalbUsesLeft} uses left
                   </div>
+                ) : (
+                  <button
+                    disabled={digitalbLoading || digitalbId.trim().length < 3}
+                    onClick={async () => {
+                      setDigitalbLoading(true);
+                      setDigitalbMsg("");
+                      try {
+                        const { data: { session } } = await supabase.auth.getSession();
+                        if (!session?.access_token) return;
+                        const res = await fetch("/api/digitalb", {
+                          method: "POST",
+                          headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+                          body: JSON.stringify({ usernameOrSc: digitalbId.trim() }),
+                        });
+                        const json = await res.json();
+                        if (json.success) {
+                          setDigitalbLinked(true);
+                          setDigitalbUsesLeft(json.digitalbUsesLeft);
+                          setDigitalbMsg("");
+                        } else {
+                          setDigitalbMsg(json.message || "Verification failed");
+                        }
+                      } catch {
+                        setDigitalbMsg("Network error");
+                      } finally {
+                        setDigitalbLoading(false);
+                      }
+                    }}
+                    className="shrink-0 bg-white text-[var(--color-primary)] font-bold text-sm px-4 py-2.5 rounded-xl hover:opacity-90 transition-all disabled:opacity-50 flex items-center gap-1.5"
+                  >
+                    {digitalbLoading ? <Loader2 size={14} className="animate-spin" /> : <Tv size={14} />}
+                    {digitalbLoading ? "Verifying..." : "Verify"}
+                  </button>
                 )}
               </div>
             </div>
