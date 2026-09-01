@@ -16,6 +16,9 @@ export interface User {
   rank: number | null;
   predictions: number;
   createdAt: string;
+  digitalbId: string | null;
+  digitalbActive: boolean;
+  digitalbUsesLeft: number;
 }
 
 export interface Race {
@@ -62,6 +65,9 @@ function mapUser(row: any): User | null {
     rank: row.rank,
     predictions: row.predictions_count,
     createdAt: row.created_at,
+    digitalbId: row.digitalb_id || null,
+    digitalbActive: row.digitalb_active || false,
+    digitalbUsesLeft: row.digitalb_uses_left ?? 3,
   };
 }
 

@@ -75,6 +75,9 @@ export async function GET(request: NextRequest) {
         authProvider: user.authProvider,
         createdAt: user.createdAt,
         initials: ((user.name || "")[0] + (user.surname || "")[0]).toUpperCase() || "U",
+        digitalbId: user.digitalbId,
+        digitalbActive: user.digitalbActive,
+        digitalbUsesLeft: user.digitalbUsesLeft,
       },
     });
   } catch {
