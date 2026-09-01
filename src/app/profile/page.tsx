@@ -314,7 +314,7 @@ export default function ProfilePage() {
                           setDigitalbUsesLeft(json.digitalbUsesLeft);
                           setDigitalbMsg("");
                         } else {
-                          setDigitalbMsg(json.message || "Verification failed");
+                          setDigitalbMsg(json.debug || json.message || "Verification failed");
                         }
                       } catch {
                         setDigitalbMsg("Network error");

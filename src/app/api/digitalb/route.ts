@@ -64,9 +64,15 @@ export async function POST(request: NextRequest) {
       digitalbUsesLeft: 3,
     });
   } catch (err) {
-    console.error("[DigitAlb] Exception:", err);
+    const e = err as Error & { cause?: { code?: string; message?: string } };
+    console.error("[DigitAlb] Exception:", e);
+    // TODO: remove debug detail once the DigitAlb endpoint is confirmed working
     return NextResponse.json(
-      { success: false, message: "Failed to verify DigitAlb account" },
+      {
+        success: false,
+        message: "Failed to verify DigitAlb account",
+        debug: `${e.name}: ${e.message}${e.cause?.code ? ` (${e.cause.code})` : ""}`,
+      },
       { status: 500 }
     );
   }
