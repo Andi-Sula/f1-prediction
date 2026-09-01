@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     if (!res.ok) {
       console.error("[DigitAlb] HTTP", res.status, xml.slice(0, 500));
       return NextResponse.json(
-        { success: false, message: "Unable to reach DigitAlb service" },
+        { success: false, message: "Unable to reach DigitAlb service", debug: `HTTP ${res.status}: ${xml.slice(0, 300)}` },
         { status: 502 }
       );
     }
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     if (isActive === null || hasError === null) {
       console.error("[DigitAlb] Unexpected response:", xml.slice(0, 500));
       return NextResponse.json(
-        { success: false, message: "Unexpected response from DigitAlb" },
+        { success: false, message: "Unexpected response from DigitAlb", debug: xml.slice(0, 300) },
         { status: 502 }
       );
     }
@@ -107,9 +107,15 @@ export async function POST(request: NextRequest) {
       digitalbUsesLeft: 3,
     });
   } catch (err) {
-    console.error("[DigitAlb] Exception:", err);
+    const e = err as Error & { cause?: { code?: string; message?: string } };
+    console.error("[DigitAlb] Exception:", e);
+    // TODO: drop `debug` once a successful verification is confirmed
     return NextResponse.json(
-      { success: false, message: "Failed to verify DigitAlb account" },
+      {
+        success: false,
+        message: "Failed to verify DigitAlb account",
+        debug: `${e.name}: ${e.message}${e.cause?.code ? ` | cause=${e.cause.code}` : ""}${e.cause?.message ? ` | ${e.cause.message}` : ""}`,
+      },
       { status: 500 }
     );
   }
