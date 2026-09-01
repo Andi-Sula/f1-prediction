@@ -22,13 +22,13 @@ export async function POST(request: NextRequest) {
 
     const sanitized = usernameOrSc.trim();
 
-    const res = await fetch(`${DIGITALB_API_URL}/IsActiveClient`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ usernameOrSc: sanitized }),
-    });
+    const res = await fetch(
+      `${DIGITALB_API_URL}/IsActiveClient?usernameOrSc=${encodeURIComponent(sanitized)}`
+    );
 
     if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      console.error("[DigitAlb] API error:", res.status, text);
       return NextResponse.json(
         { success: false, message: "Unable to reach DigitAlb service" },
         { status: 502 }
@@ -63,7 +63,8 @@ export async function POST(request: NextRequest) {
       digitalbActive: true,
       digitalbUsesLeft: 3,
     });
-  } catch {
+  } catch (err) {
+    console.error("[DigitAlb] Exception:", err);
     return NextResponse.json(
       { success: false, message: "Failed to verify DigitAlb account" },
       { status: 500 }
