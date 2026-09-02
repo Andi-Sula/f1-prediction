@@ -40,6 +40,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, message: error }, { status: 401 });
   }
 
+  if (!DIGITALB_PROXY_TOKEN) {
+    console.error("[DigitAlb] DIGITALB_PROXY_TOKEN is not configured");
+    return NextResponse.json(
+      { success: false, message: "DigitAlb verification is temporarily unavailable" },
+      { status: 503 }
+    );
+  }
+
   if (isRateLimited(user.id)) {
     return NextResponse.json(
       { success: false, message: "Too many verification attempts. Please try again in a few minutes." },
