@@ -14,6 +14,7 @@ import {
   ArrowRight,
   Lock,
   Trophy,
+  Zap,
   Loader2,
 } from "lucide-react";
 import Link from "next/link";
@@ -83,6 +84,10 @@ export default function PredictionsPage() {
   const [bestLap, setBestLap] = useState<string | null>(null);
   const [prizes, setPrizes] = useState<{ position: number; icon_url: string | null; label: string | null }[]>([]);
   const [pageReady, setPageReady] = useState(false);
+  const [digitalbActive, setDigitalbActive] = useState(false);
+  const [digitalbUsesLeft, setDigitalbUsesLeft] = useState(0);
+  const [digitalbDeployed, setDigitalbDeployed] = useState(false);
+  const [digitalbBusy, setDigitalbBusy] = useState(false);
 
   const deadlinePassed = qualifyingTime ? new Date(qualifyingTime).getTime() - 5 * 60 * 1000 <= Date.now() : false;
   const qualiLocked = raceStatus !== "upcoming" || deadlinePassed;
@@ -123,6 +128,9 @@ export default function PredictionsPage() {
         setRaceStatus(data.raceStatus || "upcoming");
         setQualifyingTime(data.qualifyingTime || null);
         setBestLap(data.bestLap || null);
+        setDigitalbActive(data.digitalb?.active === true);
+        setDigitalbUsesLeft(data.digitalb?.usesLeft ?? 0);
+        setDigitalbDeployed(data.digitalb?.deployedForRace === true);
         const p = data.prediction;
         if (p) {
           if (p.race) { setRaceP1(p.race.p1 || ""); setRaceP2(p.race.p2 || ""); setRaceP3(p.race.p3 || ""); }
@@ -173,6 +181,35 @@ export default function PredictionsPage() {
     setTimeout(() => setMessage(""), 3000);
   };
 
+  const activateDigitAlb = async () => {
+    if (!raceId || digitalbBusy || digitalbDeployed || allLocked || digitalbUsesLeft <= 0) return;
+    if (!window.confirm(`Use one of your ${digitalbUsesLeft} DigitAlb 2× multipliers for ${raceName || "this race"}? This cannot be undone.`)) return;
+    setDigitalbBusy(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch("/api/predictions", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({ action: "boost/digitalb", raceId }),
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setDigitalbDeployed(true);
+        setDigitalbUsesLeft(json.tokensRemaining ?? 0);
+        setMessage("2× DigitAlb multiplier activated!");
+      } else {
+        setMessage(json.error || "Failed to activate multiplier");
+      }
+    } catch {
+      setMessage("Failed to activate multiplier");
+    } finally {
+      setDigitalbBusy(false);
+      setTimeout(() => setMessage(""), 3000);
+    }
+  };
 
 
   return (
@@ -384,7 +421,7 @@ export default function PredictionsPage() {
         </Link>
 
         {/* DigitAlb 2× Promo */}
-        <Link href="/profile" className="group bg-[var(--color-primary)] rounded-2xl p-5 hover:shadow-lg hover:shadow-[var(--color-primary)]/30 transition-all">
+        <div className="bg-[var(--color-primary)] rounded-2xl p-5">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0">
               <img src="/digitalb-logo.webp" alt="DigitAlb" className="w-full h-full object-cover" />
@@ -394,13 +431,34 @@ export default function PredictionsPage() {
                 <h3 className="font-bold text-sm text-white">DigitAlb</h3>
                 <span className="bg-white text-[var(--color-primary)] text-[10px] font-extrabold px-2 py-0.5 rounded-md">2× MULTIPLIER</span>
               </div>
-              <p className="text-xs text-white/80">Add your subscriber ID in your profile to double your points — usable in 3 races per season.</p>
-              <div className="flex items-center gap-1 mt-2 text-xs font-bold text-white/80 group-hover:text-white transition-colors">
-                Go to Profile <ArrowRight size={12} />
-              </div>
+              {!digitalbActive ? (
+                <>
+                  <p className="text-xs text-white/80">Add your subscriber ID in your profile to double your points — usable in 3 races per season.</p>
+                  <Link href="/profile" className="group flex items-center gap-1 mt-2 text-xs font-bold text-white/80 hover:text-white transition-colors">
+                    Go to Profile <ArrowRight size={12} />
+                  </Link>
+                </>
+              ) : digitalbDeployed ? (
+                <div className="flex items-center gap-1.5 mt-1 text-sm font-semibold text-white">
+                  <CheckCircle2 size={16} />
+                  2× active for {raceName || "this race"} — {digitalbUsesLeft} uses left
+                </div>
+              ) : (
+                <>
+                  <p className="text-xs text-white/80">Double your score for this race. {digitalbUsesLeft} of 3 uses left this season.</p>
+                  <button
+                    onClick={activateDigitAlb}
+                    disabled={allLocked || digitalbBusy || digitalbUsesLeft <= 0}
+                    className="mt-3 bg-white text-[var(--color-primary)] font-bold text-sm px-4 py-2 rounded-xl hover:opacity-90 transition-all disabled:opacity-50 flex items-center gap-1.5"
+                  >
+                    {digitalbBusy ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}
+                    {digitalbUsesLeft <= 0 ? "No uses left this season" : allLocked ? "Predictions locked" : "Activate 2× for this race"}
+                  </button>
+                </>
+              )}
             </div>
           </div>
-        </Link>
+        </div>
         </div>
       </div>
 

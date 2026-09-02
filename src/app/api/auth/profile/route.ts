@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth";
-import { getUserById } from "@/lib/database";
+import { getUserById, getDigitAlbTokensUsed, DIGITALB_SEASON_TOKENS } from "@/lib/database";
 import { supabaseAdmin } from "@/lib/supabase-server";
 
 export async function GET(request: NextRequest) {
@@ -56,6 +56,10 @@ export async function GET(request: NextRequest) {
       .select("id", { count: "exact", head: true })
       .eq("user_id", user.id);
 
+    const digitalbTokensUsed = user.digitalbActive
+      ? await getDigitAlbTokensUsed(user.id, new Date().getFullYear())
+      : 0;
+
     return NextResponse.json({
       success: true,
       user: {
@@ -77,7 +81,7 @@ export async function GET(request: NextRequest) {
         initials: ((user.name || "")[0] + (user.surname || "")[0]).toUpperCase() || "U",
         digitalbId: user.digitalbId,
         digitalbActive: user.digitalbActive,
-        digitalbUsesLeft: user.digitalbUsesLeft,
+        digitalbUsesLeft: Math.max(DIGITALB_SEASON_TOKENS - digitalbTokensUsed, 0),
       },
     });
   } catch {
