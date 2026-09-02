@@ -81,34 +81,26 @@ export async function POST(request: NextRequest) {
 
     const xml = await res.text();
 
-    // DigitAlb returns 200 even for failures, so the body is the source of truth;
-    // a non-2xx here means the proxy itself rejected the request.
-    if (!res.ok) {
-      console.error("[DigitAlb] Proxy HTTP", res.status, xml.slice(0, 500));
+    const isActive = readTag(xml, "IsActive");
+    const hasError = readTag(xml, "HasError");
+
+    // DigitAlb can return a non-2xx status alongside a valid SOAP envelope,
+    // so the body wins whenever it parses.
+    if (isActive === null || hasError === null) {
+      const faultString = readTag(xml, "faultstring");
+      console.error("[DigitAlb] Unusable response. HTTP", res.status, xml.slice(0, 1000));
       return NextResponse.json(
-        { success: false, message: "Unable to reach DigitAlb service", debug: `HTTP ${res.status}: ${xml.slice(0, 300)}` },
+        {
+          success: false,
+          message: faultString ? "DigitAlb verification failed" : "Unable to reach DigitAlb service",
+          debug: `HTTP ${res.status}: ${(faultString ?? xml).slice(0, 800)}`,
+        },
         { status: res.status === 429 ? 429 : 502 }
       );
     }
 
-    const faultString = readTag(xml, "faultstring");
-    if (faultString !== null) {
-      console.error("[DigitAlb] SOAP fault:", xml.slice(0, 500));
-      return NextResponse.json(
-        { success: false, message: "DigitAlb verification failed", debug: faultString.slice(0, 300) },
-        { status: 502 }
-      );
-    }
-
-    const isActive = readTag(xml, "IsActive");
-    const hasError = readTag(xml, "HasError");
-
-    if (isActive === null || hasError === null) {
-      console.error("[DigitAlb] Unexpected response:", xml.slice(0, 500));
-      return NextResponse.json(
-        { success: false, message: "Unexpected response from DigitAlb", debug: xml.slice(0, 300) },
-        { status: 502 }
-      );
+    if (!res.ok) {
+      console.error("[DigitAlb] Non-2xx with SOAP body. HTTP", res.status, xml.slice(0, 1000));
     }
 
     const data = {
@@ -119,7 +111,12 @@ export async function POST(request: NextRequest) {
 
     if (data.HasError) {
       return NextResponse.json(
-        { success: false, message: data.ErrorMessage || "DigitAlb verification failed" },
+        {
+          success: false,
+          message: data.ErrorMessage || "DigitAlb verification failed",
+          // TODO: drop `debug` once a successful verification is confirmed
+          debug: `HTTP ${res.status}: ${xml.slice(0, 800)}`,
+        },
         { status: 400 }
       );
     }
