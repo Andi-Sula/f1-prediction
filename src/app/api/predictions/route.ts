@@ -6,10 +6,13 @@ import {
   submitPrediction,
   getRace,
   getActiveRace,
-  getDigitAlbTokensUsed,
+  getDigitAlbTokenRaceIds,
   deployDigitAlbToken,
   applyRaiffeisenBoost,
   getUserRaceScore,
+  getUserById,
+  updateUser,
+  DIGITALB_SEASON_TOKENS,
 } from "@/lib/database";
 
 export async function GET(request: NextRequest) {
@@ -26,12 +29,22 @@ export async function GET(request: NextRequest) {
     if (!raceId) return NextResponse.json({ success: false, message: "No active race found" }, { status: 404 });
 
     const prediction = await getPrediction(user.id, raceId);
+    const dbUser = await getUserById(user.id);
+    const usedRaceIds = dbUser?.digitalbActive
+      ? await getDigitAlbTokenRaceIds(user.id, race.season)
+      : [];
+
     return NextResponse.json({
       raceId,
       raceName: race.name,
       raceStatus: race.status,
       qualifyingTime: race.qualifyingTime || null,
       bestLap: race.bestLap || null,
+      digitalb: {
+        active: dbUser?.digitalbActive === true,
+        usesLeft: Math.max(DIGITALB_SEASON_TOKENS - usedRaceIds.length, 0),
+        deployedForRace: usedRaceIds.includes(raceId),
+      },
       prediction: prediction?.driverPredictions || {
         race: { p1: null, p2: null, p3: null },
         qualifying: { p1: null, p2: null, p3: null },
@@ -111,18 +124,43 @@ export async function PUT(request: NextRequest) {
     const { action, raceId } = body;
 
     if (action === "boost/digitalb") {
-      const tokensUsed = await getDigitAlbTokensUsed(user.id);
-      if (tokensUsed >= 3) {
-        return NextResponse.json({ error: "All 3 DigitAlb multiplier tokens have been used this season" }, { status: 400 });
-      }
       const race = await getRace(raceId);
-      const deadline = race?.qualifyingTime ? new Date(new Date(race.qualifyingTime).getTime() - 5 * 60 * 1000) : null;
+      if (!race) {
+        return NextResponse.json({ error: "Race not found" }, { status: 404 });
+      }
+
+      const dbUser = await getUserById(user.id);
+      if (!dbUser?.digitalbActive) {
+        return NextResponse.json(
+          { error: "Verify your DigitAlb subscription in your profile first" },
+          { status: 403 }
+        );
+      }
+
+      const deadline = race.qualifyingTime ? new Date(new Date(race.qualifyingTime).getTime() - 5 * 60 * 1000) : null;
       const predictionsClosed = deadline && deadline <= new Date();
-      if (race && predictionsClosed) {
+      if (predictionsClosed || race.status === "completed" || race.status === "cancelled") {
         return NextResponse.json({ error: "Cannot deploy token — predictions are closed" }, { status: 403 });
       }
+
+      const usedRaceIds = await getDigitAlbTokenRaceIds(user.id, race.season);
+      if (usedRaceIds.includes(raceId)) {
+        return NextResponse.json({
+          success: true,
+          tokensRemaining: Math.max(DIGITALB_SEASON_TOKENS - usedRaceIds.length, 0),
+        });
+      }
+      if (usedRaceIds.length >= DIGITALB_SEASON_TOKENS) {
+        return NextResponse.json(
+          { error: `All ${DIGITALB_SEASON_TOKENS} DigitAlb multiplier tokens have been used this season` },
+          { status: 400 }
+        );
+      }
+
       await deployDigitAlbToken(user.id, raceId);
-      return NextResponse.json({ success: true, tokensRemaining: 3 - tokensUsed - 1 });
+      const tokensRemaining = DIGITALB_SEASON_TOKENS - usedRaceIds.length - 1;
+      await updateUser(user.id, { digitalbUsesLeft: tokensRemaining });
+      return NextResponse.json({ success: true, tokensRemaining });
     }
 
     if (action === "boost/raiffeisen") {

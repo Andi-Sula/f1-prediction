@@ -39,7 +39,7 @@ export interface Prediction {
   id: string;
   userId: string;
   raceId: string;
-  driverPredictions: unknown[];
+  driverPredictions: unknown;
   locked: boolean;
   submittedAt: string | null;
   createdAt: string;
@@ -138,6 +138,7 @@ export async function updateUser(
     telephone: string;
     role: string;
     predictions: number;
+    digitalbUsesLeft: number;
   }>
 ): Promise<User | null> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -154,6 +155,7 @@ export async function updateUser(
   if (updates.telephone !== undefined) dbUpdates.telephone = updates.telephone;
   if (updates.role !== undefined) dbUpdates.role = updates.role;
   if (updates.predictions !== undefined) dbUpdates.predictions_count = updates.predictions;
+  if (updates.digitalbUsesLeft !== undefined) dbUpdates.digitalb_uses_left = updates.digitalbUsesLeft;
 
   const { data, error } = await supabaseAdmin
     .from("users")
@@ -176,17 +178,57 @@ export async function getAllUsers(): Promise<User[]> {
 
 // ─── Prediction operations ───
 
+export interface PredictionBoosts {
+  raiffeisen: boolean;
+  digitAlbToken: boolean;
+}
+
+export function readBoosts(driverPredictions: unknown): PredictionBoosts {
+  const boosts = (driverPredictions as { boosts?: Partial<PredictionBoosts> } | null)?.boosts;
+  return {
+    raiffeisen: boosts?.raiffeisen === true,
+    digitAlbToken: boosts?.digitAlbToken === true,
+  };
+}
+
+export async function setPredictionBoosts(
+  userId: string,
+  raceId: string,
+  boosts: Partial<PredictionBoosts>
+) {
+  const existing = await getPrediction(userId, raceId);
+  const current = (existing?.driverPredictions ?? {}) as Record<string, unknown>;
+  const { error } = await supabaseAdmin.from("predictions").upsert(
+    {
+      user_id: userId,
+      race_id: raceId,
+      driver_predictions: {
+        ...current,
+        boosts: { ...readBoosts(current), ...boosts },
+      },
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id,race_id" }
+  );
+  if (error) throw new Error(`Failed to update boosts: ${error.message}`);
+  return { success: true };
+}
+
 export async function savePrediction(
   userId: string,
   raceId: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   driverPredictions: any
 ) {
+  const existing = await getPrediction(userId, raceId);
+  // Boosts are server-owned: a client-supplied value must never grant a multiplier.
+  const clientData = { ...(driverPredictions ?? {}) };
+  delete clientData.boosts;
   const { error } = await supabaseAdmin.from("predictions").upsert(
     {
       user_id: userId,
       race_id: raceId,
-      driver_predictions: driverPredictions,
+      driver_predictions: { ...clientData, boosts: readBoosts(existing?.driverPredictions) },
       updated_at: new Date().toISOString(),
     },
     { onConflict: "user_id,race_id" }
@@ -210,7 +252,7 @@ export async function getPrediction(
     id: data.id,
     userId: data.user_id,
     raceId: data.race_id,
-    driverPredictions: data.driver_predictions || [],
+    driverPredictions: data.driver_predictions ?? {},
     locked: data.locked,
     submittedAt: data.submitted_at,
     createdAt: data.created_at,
@@ -347,13 +389,28 @@ export async function getUserRaceScore(userId: string, raceId: string) {
 
 // ─── DigitAlb token operations ───
 
-export async function getDigitAlbTokensUsed(userId: string): Promise<number> {
-  const { count, error } = await supabaseAdmin
+export const DIGITALB_SEASON_TOKENS = 3;
+
+async function getSeasonRaceIds(season: number): Promise<string[]> {
+  const { data, error } = await supabaseAdmin.from("races").select("id").eq("season", season);
+  if (error) return [];
+  return data.map((r: { id: string }) => r.id);
+}
+
+export async function getDigitAlbTokenRaceIds(userId: string, season: number): Promise<string[]> {
+  const seasonRaceIds = await getSeasonRaceIds(season);
+  if (seasonRaceIds.length === 0) return [];
+  const { data, error } = await supabaseAdmin
     .from("digitalb_tokens")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", userId);
-  if (error) return 0;
-  return count || 0;
+    .select("race_id")
+    .eq("user_id", userId)
+    .in("race_id", seasonRaceIds);
+  if (error) return [];
+  return data.map((r: { race_id: string }) => r.race_id);
+}
+
+export async function getDigitAlbTokensUsed(userId: string, season: number): Promise<number> {
+  return (await getDigitAlbTokenRaceIds(userId, season)).length;
 }
 
 export async function deployDigitAlbToken(userId: string, raceId: string) {
@@ -361,24 +418,14 @@ export async function deployDigitAlbToken(userId: string, raceId: string) {
     .from("digitalb_tokens")
     .insert({ user_id: userId, race_id: raceId });
   if (error) throw new Error(`Failed to deploy token: ${error.message}`);
+  await setPredictionBoosts(userId, raceId, { digitAlbToken: true });
   return { success: true };
 }
 
 // ─── Boost operations ───
 
 export async function applyRaiffeisenBoost(userId: string, raceId: string) {
-  const pred = await getPrediction(userId, raceId);
-  if (pred) {
-    const updatedPredictions = pred.driverPredictions || [];
-    await supabaseAdmin
-      .from("predictions")
-      .update({
-        driver_predictions: updatedPredictions,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("user_id", userId)
-      .eq("race_id", raceId);
-  }
+  await setPredictionBoosts(userId, raceId, { raiffeisen: true });
   return { success: true, pointsAdded: 15 };
 }
 

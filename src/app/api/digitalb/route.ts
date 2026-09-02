@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase-server";
+import { getDigitAlbTokensUsed, DIGITALB_SEASON_TOKENS } from "@/lib/database";
 
 // Vercel has no static IP, so DigitAlb is reached through the geekroom proxy (static IP + IPSec VPN).
 const DIGITALB_PROXY_URL = process.env.DIGITALB_PROXY_URL || "https://f1predictor.geekroom.al/digitalb-proxy/";
@@ -137,16 +138,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Active client — save to user profile
+    const tokensUsed = await getDigitAlbTokensUsed(user.id, new Date().getFullYear());
+    const usesLeft = Math.max(DIGITALB_SEASON_TOKENS - tokensUsed, 0);
     await supabaseAdmin
       .from("users")
-      .update({ digitalb_id: sanitized, digitalb_active: true, digitalb_uses_left: 3 })
+      .update({ digitalb_id: sanitized, digitalb_active: true, digitalb_uses_left: usesLeft })
       .eq("id", user.id);
 
     return NextResponse.json({
       success: true,
       message: "DigitAlb account linked successfully",
       digitalbActive: true,
-      digitalbUsesLeft: 3,
+      digitalbUsesLeft: usesLeft,
     });
   } catch (err) {
     const e = err as Error & { cause?: { code?: string; message?: string } };
@@ -169,9 +172,10 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: false, message: error }, { status: 401 });
   }
 
+  // Tokens already deployed this season stay consumed.
   await supabaseAdmin
     .from("users")
-    .update({ digitalb_id: null, digitalb_active: false, digitalb_uses_left: 3 })
+    .update({ digitalb_id: null, digitalb_active: false })
     .eq("id", user.id);
 
   return NextResponse.json({ success: true, message: "DigitAlb account unlinked" });
