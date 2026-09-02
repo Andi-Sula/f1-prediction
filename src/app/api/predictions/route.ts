@@ -181,7 +181,8 @@ export async function PUT(request: NextRequest) {
     }
 
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });
-  } catch {
+  } catch (err) {
+    console.error("[Predictions PUT] Error:", err);
     return NextResponse.json({ error: "Request failed" }, { status: 500 });
   }
 }
