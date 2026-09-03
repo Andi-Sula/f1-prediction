@@ -1,0 +1,35 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches:
+      - feature
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Trigger Staging Deployment
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Webhook Request to Staging Deployer
+        run: |
+          DEPLOY_URL="https://f1predictor-staging.geekroom.al/deployer/"
+          echo "Triggering staging deployment to: ${DEPLOY_URL}..."
+          
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "${DEPLOY_URL}" \
+            -H "X-Deploy-Token: ${{ secrets.STAGING_DEPLOY_SECRET }}" \
+            -H "Content-Type: application/json")
+
+          HTTP_STATUS=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "Response HTTP Status: $HTTP_STATUS"
+          echo "Response Body: $BODY"
+
+          if [ "$HTTP_STATUS" -ne 200 ] && [ "$HTTP_STATUS" -ne 202 ]; then
+            echo "::error::Deployment trigger failed with HTTP status $HTTP_STATUS"
+            exit 1
+          fi
+
+          echo "Deployment triggered successfully!"
